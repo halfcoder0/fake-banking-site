@@ -1,2 +1,2 @@
 # fake-banking-site
-Nexabank - Fake a banking site
+Nexabank - A fake banking site for SIT - ICT2216 
