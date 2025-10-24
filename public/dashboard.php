@@ -1,22 +1,4 @@
-<?php
-session_start();
-include('../includes/dbconnection.php'); // this sets up $pdo
-
-// Check if user is logged in
-if (!isset($_SESSION['uid']) || empty($_SESSION['uid'])) {
-    header('Location: logout.php');
-    exit;
-}
-
-$uid = $_SESSION['uid'];
-
-// Fetch the user's name using PDO
-$stmt = $pdo->prepare("SELECT fullname FROM tblecustomer WHERE id = :id");
-$stmt->execute(['id' => $uid]);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$name = $row ? $row['fullname'] : 'Guest';
-?>
+<?php $name='test'; ?>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -30,7 +12,7 @@ $name = $row ? $row['fullname'] : 'Guest';
   <div class="wrapper">
     <h2>Welcome !! <?php echo htmlspecialchars($name); ?>
       <div class="input-box button">
-    <a href="logout.php">Logout</a>
+    <a href="/logout">Logout</a>
   </div>
 </h2>
   </div>
