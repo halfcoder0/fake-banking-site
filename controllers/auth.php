@@ -6,7 +6,7 @@ function attempt_auth_user($input)
 {
     $username = trim($input['username'] ?? '');
     $password  = trim($input['password'] ?? '');
-    
+
     if ($username === '' || $password === '') {
         send_invalid_response();
     }
@@ -21,8 +21,5 @@ function send_invalid_response()
 }
 
 header('Content-Type: application/json');
-#$input = json_decode(file_get_contents('php://input'), true);
 $input = $_POST;
 attempt_auth_user($input);
-
-
