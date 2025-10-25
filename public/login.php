@@ -1,5 +1,5 @@
 <?php
-session_start();
+require("../controllers/security/session_bootstrap.php");
 require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');

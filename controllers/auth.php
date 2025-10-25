@@ -16,4 +16,5 @@ function attempt_auth($creds)
 function handle_error($msg){
     $_SESSION['error'] = $msg;
     header('Location: /login');
+    exit;
 }

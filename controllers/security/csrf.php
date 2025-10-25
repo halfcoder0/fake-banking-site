@@ -44,7 +44,7 @@ function csrf_verify(int $max_age = 7200): bool
 
     $token = $_POST['csrf_token'] ?? '';
 
-    if ($token && $token == $_SESSION['csrf_token']) return true;
+    if (is_string($token) && hash_equals($_SESSION['csrf_token'], $token)) return true;
 
     return false;
 }

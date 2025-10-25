@@ -1,6 +1,6 @@
 <?php
-session_start();
-session_unset();// unset session variable
-session_destroy(); // destroy session
-header('location: /');
+require_once('../controllers/security/session_bootstrap.php');
+
+session_secure_logout();
+header("Location: /");
 ?>
