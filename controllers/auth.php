@@ -1,25 +1,19 @@
 <?php
-include('../includes/dbconnection.php'); // sets up $pdo
-include('helpers.php');
+require_once('../includes/dbconnection.php');
 
-function attempt_auth_user($input)
+function attempt_auth($creds)
 {
-    $username = trim($input['username'] ?? '');
-    $password  = trim($input['password'] ?? '');
+    if (!csrf_verify()) handle_error('CSRF ERROR');
 
-    if ($username === '' || $password === '') {
-        send_invalid_response();
-    }
-    echo json_encode(['token' => 'yes']);
+    $username = trim($creds['username'] ?? '');
+    $password  = trim($creds['password'] ?? '');
+
+    if ($username === '' || $password === '') handle_error('Invalid username/password.');
+
+    header('Location: /dashboard');
 }
 
-function send_invalid_response()
-{
-    http_response_code(400);
-    echo json_encode(['Error' => 'Invalid username/password.']);
-    exit;
+function handle_error($msg){
+    $_SESSION['error'] = $msg;
+    header('Location: /login');
 }
-
-header('Content-Type: application/json');
-$input = $_POST;
-attempt_auth_user($input);

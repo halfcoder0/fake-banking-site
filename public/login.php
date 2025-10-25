@@ -2,6 +2,7 @@
 session_start();
 require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
+require('../controllers/auth.php');
 
 $script_hashes = [
     'sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=',
@@ -15,48 +16,8 @@ $nonce = generate_random();
 add_csp_header($script_hashes, $style_hashes, $nonce);
 
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['login']) && isset($_POST['csrf_token'])) {
-    attempt_login();
-    header('Location: /login');
+    attempt_auth($_POST);
     exit;
-}
-
-function attempt_login()
-{
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-
-    if (!csrf_verify()){
-        $_SESSION["error"] = "Bad request";
-        header('Location: /login');
-        return;
-    }
-
-    // Send post to the self
-    $auth_url = $_ENV["CONTAINER_NAME"] . "/auth/login";
-    $post_data = [
-        'username' => $username,
-        'password' => $password
-    ];
-
-    $response = http_post($auth_url, $post_data);
-
-    if ($response === false) {
-        $_SESSION["error"] = "Request error";
-        header('Location: /login');
-        return;
-    }
-
-    $data = json_decode($response['body'], true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        $_SESSION['error'] = $response['error'];;
-        header('Location: /login');
-        exit;
-    }
-
-    if (isset($data['token'])) {
-        header("Location: /dashboard");
-        exit();
-    }
 }
 
 ?>
