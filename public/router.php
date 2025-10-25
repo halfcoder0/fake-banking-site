@@ -14,19 +14,22 @@ switch ($request) {
         require __DIR__ . '/login.php';
         break;
     case '/login':
-        require 'login-new.php';
+        require __DIR__ . '/login.php';
         break;
     case '/auth/login':
         require __DIR__ . $controllers . 'auth.php';
         break;
     case '/dashboard':
-        require 'dashboard.php';
+        require __DIR__ . '/dashboard.php';
         break;
     case '/logout':
-        require 'logout.php';
+        require __DIR__ . '/logout.php';
+        break;
+    case '/register':
+        require __DIR__ . '/register.php';
         break;
     default:
-        http_response_code(404);
+        require __DIR__ . '/404.php';
 }
 
 ?>

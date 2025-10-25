@@ -1,49 +1,62 @@
 <?php
-include('../controllers/helpers.php');
 session_start();
+require_once('../controllers/helpers.php');
+require_once('../controllers/security/csrf.php');
 
-if (isset($_POST['username']) && isset($_POST['password'])) {
-  attempt_login();
-  header('Location: /login');
-  exit;
+$script_hashes = [
+    'sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=',
+    'sha256-98vAGjEDGN79TjHkYWVD4s87rvWkdWLHPs5MC3FvFX4=',
+    'sha256-C8oQVJ33cKtnkARnmeWp6SDChkU+u7KvsNMFUzkkUzk='
+];
+$style_hashes = [
+    'sha256-SYaExfXhqspc1072C5RaeBUps+HeQgzFAdn1JcknIo8='
+];
+$nonce = generate_random();
+add_csp_header($script_hashes, $style_hashes, $nonce);
+
+if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['login']) && isset($_POST['csrf_token'])) {
+    attempt_login();
+    header('Location: /login');
+    exit;
 }
 
 function attempt_login()
 {
-  $username = $_POST['username'] ?? '';
-  $password = $_POST['password'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-  $auth_url = "http://nginx_webserver_container/auth/login";
-  $post_data = [
-    'username' => $username,
-    'password' => $password
-  ];
+    if (!csrf_verify()){
+        $_SESSION["error"] = "Bad request";
+        header('Location: /login');
+        return;
+    }
 
-  $response = http_post($auth_url, $post_data);
+    // Send post to the self
+    $auth_url = $_ENV["CONTAINER_NAME"] . "/auth/login";
+    $post_data = [
+        'username' => $username,
+        'password' => $password
+    ];
 
-  if ($response === false) {
-    $_SESSION["Error"] = "Request error";
-    header('Location: /login');
-    return;
-  }
+    $response = http_post($auth_url, $post_data);
 
-  $data = json_decode($response['body'], true);
-  if (json_last_error() !== JSON_ERROR_NONE) {
-    $_SESSION['Error'] = 'Bad request';
-    header('Location: /login');
-    exit;
-  }
+    if ($response === false) {
+        $_SESSION["error"] = "Request error";
+        header('Location: /login');
+        return;
+    }
 
-  if (!empty($data['Error'])) {
-    $_SESSION['Error'] = $data['Error'];
-    header('Location: /login');
-    return;
-  }
+    $data = json_decode($response['body'], true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        $_SESSION['error'] = $response['error'];;
+        header('Location: /login');
+        exit;
+    }
 
-  if (isset($data['token'])) {
-    header("Location: /dashboard");
-    exit();
-  }
+    if (isset($data['token'])) {
+        header("Location: /dashboard");
+        exit();
+    }
 }
 
 ?>
@@ -59,9 +72,16 @@ function attempt_login()
     <meta name="author" content="">
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/favicon.png">
-    <title>Nice admin Template - The Ultimate Multipurpose admin template</title>
+    <title>Nexabank | Login</title>
     <!-- Custom CSS -->
-    <link href="./dist/css/style.min.css" rel="stylesheet">
+    <link href="./dist/css/style.min.css" rel="stylesheet" integrity="sha256-SYaExfXhqspc1072C5RaeBUps+HeQgzFAdn1JcknIo8=" crossorigin="anonymous">
+
+    <style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+        .auth-wrapper {
+            background: url(./assets/images/big/auth-bg.jpg) no-repeat center center;
+            background-color: #f0f5f9;
+        }
+    </style>
 </head>
 
 <body>
@@ -72,17 +92,28 @@ function attempt_login()
                 <div class="lds-pos"></div>
             </div>
         </div>
-        <div class="auth-wrapper d-flex no-block justify-content-center align-items-center" style="background:url(./assets/images/big/auth-bg.jpg) no-repeat center center;">
+        <div class="auth-wrapper d-flex no-block justify-content-center align-items-center">
             <div class="auth-box">
-                <div id="loginform">
+                <div id="loginform-div">
                     <div class="logo">
                         <span class="db"><img src="./assets/images/logo-icon.png" alt="logo" /></span>
-                        <h5 class="font-medium m-b-20">Sign In to Admin</h5>
+                        <h5 class="font-medium m-b-20">Sign In</h5>
                     </div>
                     <!-- Form -->
+                    <?php if (isset($_SESSION['error'])): ?>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-warning"> <?php echo ($_SESSION['error']);
+                                                                    unset($_SESSION['error']); ?>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">x</span> </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                     <div class="row">
                         <div class="col-12">
                             <form class="form-horizontal m-t-20" id="loginform" method="POST" action="/login">
+                                <?= csrf_input() ?>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
@@ -95,23 +126,23 @@ function attempt_login()
                                     </div>
                                     <input name="password" type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" required>
                                 </div>
-                                <div class="form-group row">
+                                <!-- TO BE IMPLEMENTED <div class="form-group row">
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="customCheck1">
                                             <label class="custom-control-label" for="customCheck1">Remember me</label>
-                                            <a href="javascript:void(0)" id="to-recover" class="text-dark float-right"><i class="fa fa-lock m-r-5"></i> Forgot pwd?</a>
+                                            <a href="" id="to-recover" class="text-dark float-right"><i class="fa fa-lock m-r-5"></i> Forgot pwd?</a>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="form-group text-center">
                                     <div class="col-xs-12 p-b-20">
-                                        <button class="btn btn-block btn-lg btn-info" type="submit">Log In</button>
+                                        <button class="btn btn-block btn-lg btn-info" type="submit" name="login" value="login">Log In</button>
                                     </div>
                                 </div>
                                 <div class="form-group m-b-0 m-t-10">
                                     <div class="col-sm-12 text-center">
-                                        Don't have an account? <a href="authentication-register1.html" class="text-info m-l-5"><b>Sign Up</b></a>
+                                        Don't have an account? <a href="/register" class="text-info m-l-5"><b>Sign Up</b></a>
                                     </div>
                                 </div>
                             </form>
@@ -145,26 +176,19 @@ function attempt_login()
             </div>
         </div>
     </div>
-    <!-- ============================================================== -->
     <!-- All Required js -->
-    <!-- ============================================================== -->
-    <script src="./assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="./assets/libs/jquery/dist/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="./assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script src="./assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
-    <!-- ============================================================== -->
+    <script src="./assets/libs/popper.js/dist/umd/popper.min.js" integrity="sha256-98vAGjEDGN79TjHkYWVD4s87rvWkdWLHPs5MC3FvFX4=" crossorigin="anonymous"></script>
+    <script src="./assets/libs/bootstrap/dist/js/bootstrap.min.js" integrity="sha256-C8oQVJ33cKtnkARnmeWp6SDChkU+u7KvsNMFUzkkUzk=" crossorigin="anonymous"></script>
     <!-- This page plugin js -->
-    <!-- ============================================================== -->
-    <script>
-    $('[data-toggle="tooltip"]').tooltip();
-    $(".preloader").fadeOut();
-    // ============================================================== 
-    // Login and Recover Password 
-    // ============================================================== 
-    $('#to-recover').on("click", function() {
-        $("#loginform").slideUp();
-        $("#recoverform").fadeIn();
-    });
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+        $('[data-toggle="tooltip"]').tooltip();
+        $(".preloader").fadeOut();
+        $('#to-recover').on("click", function() {
+            $("#loginform").slideUp();
+            $("#recoverform").fadeIn();
+        });
     </script>
 </body>
 
