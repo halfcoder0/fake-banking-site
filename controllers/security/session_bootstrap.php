@@ -9,8 +9,8 @@ if (PHP_SAPI !== 'cli') {
     }
 }
 
-const SESSION_INACTIVITY_LIMIT = 120;    // 15 minutes idle timeout
-const SESSION_ROTATE_INTERVAL  = 60;    // rotate every 10 minutes
+const SESSION_INACTIVITY_LIMIT = 900;    // 15 minutes idle timeout
+const SESSION_ROTATE_INTERVAL  = 600;    // rotate every 10 minutes
 
 configure_session();
 session_start();
@@ -21,16 +21,19 @@ perform_checks();
  */
 function configure_session()
 {
+    ini_set('display_errors', '0');                         // Hide errors from user
+    ini_set('log_errors', '1');                             // Log errors
+    ini_set('error_log', 'php://stderr');                   // Print logs to container logs
     ini_set('session.use_cookies', '1');
-    ini_set('session.use_only_cookies', '1');          // no SID in URLs
-    ini_set('session.use_trans_sid', '0');             // disable URL-based session IDs
+    ini_set('session.use_only_cookies', '1');               // no SID in URLs
+    ini_set('session.use_trans_sid', '0');                  // disable URL-based session IDs
     ini_set('session.cookie_httponly', '1');
-    //ini_set('session.cookie_secure', '1');           // cookie only over HTTPS
-    ini_set('session.use_strict_mode', '1');           // reject uninitialized IDs (anti-fixation)
-    ini_set('session.sid_length', '48');               // longer IDs
-    ini_set('session.sid_bits_per_character', '6');    // base64-like charset
-    ini_set('session.gc_maxlifetime', '1800');         // 30 min server-side storage lifetime
-    ini_set('session.save_path','/var/lib/php/sessions'); // set session save path
+    //ini_set('session.cookie_secure', '1');                // cookie only over HTTPS
+    ini_set('session.use_strict_mode', '1');                // reject uninitialized IDs (anti-fixation)
+    ini_set('session.sid_length', '48');                    // longer IDs
+    ini_set('session.sid_bits_per_character', '6');         // base64-like charset
+    ini_set('session.gc_maxlifetime', '1800');              // 30 min server-side storage lifetime
+    ini_set('session.save_path', '/var/lib/php/sessions');   // set session save path
 
     $cookieParams = [
         'lifetime' => 0,            // session cookie (dies with browser)
@@ -45,39 +48,50 @@ function configure_session()
     session_name('APPSESSID');
 }
 
-/** 
- * Perform checks on request
+/**
+ * Initialise session metadata
  */
-function perform_checks()
+function init_session_meta(): void
 {
-    // INIT: Session meta data
     if (!isset($_SESSION['_meta'])) {
         $_SESSION['_meta'] = [
             'created'     => time(),
             'last_regen'  => time(),
             'last_seen'   => time(),
             'fingerprint' => get_fingerprint(),
-            'ip_address'   => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null,
+            'ip_address'  => $_SERVER['REMOTE_ADDR'] ?? null,
         ];
     }
+}
+
+/** 
+ * Perform checks on request
+ */
+function perform_checks()
+{
+    init_session_meta();
 
     // Fingerprint Check
-    $current_fp = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    $current_fp = get_fingerprint();
     if ($_SESSION['_meta']['fingerprint'] !== $current_fp) kill_session();
 
     // IP Check
     //if ($_SERVER['REMOTE_ADDR'] != $_SESSION['_meta']['ip_address']) kill_session();
 
-    // Inactivity timeout
-    if (isset($_SESSION['_meta']['last_seen']) && (time() - $_SESSION['_meta']['last_seen'] > SESSION_INACTIVITY_LIMIT)) kill_session();
+    $age = time() - ($_SESSION['_meta']['created'] ?? time());
+    $last_regen = $_SESSION['_meta']['last_regen'] ?? 0;
+    $last_seen = $_SESSION['_meta']['last_seen'] ?? 0;
 
-    $_SESSION['_meta']['last_seen'] = time();
+    // Inactivity timeout
+    if ($last_seen && (time() - $last_seen > SESSION_INACTIVITY_LIMIT)) kill_session();
 
     // Periodic ID rotation to narrow fixation/hijack windows
-    if (time() - $_SESSION['_meta']['last_regen'] > SESSION_ROTATE_INTERVAL) {
+    if ($age > 10 && (time() - $last_regen) > SESSION_ROTATE_INTERVAL) {
         session_regenerate_id(true);
         $_SESSION['_meta']['last_regen'] = time();
     }
+
+    $_SESSION['_meta']['last_seen'] = time();
 }
 
 /** 
@@ -98,7 +112,10 @@ function kill_session()
         ]);
     }
     session_destroy();
+
     session_start();
+    init_session_meta();
+    exit;
 }
 
 /**
@@ -106,8 +123,6 @@ function kill_session()
  */
 function hard_recreate_session(): void
 {
-    $old = $_SESSION; // If theres any stuff to carry over
-
     session_regenerate_id(true);
     $_SESSION = ['_meta' => [
         'created'     => time(),
@@ -142,6 +157,7 @@ function session_secure_logout(): void
 /**
  * Hash User Agent as fingerprint
  */
-function get_fingerprint(){
+function get_fingerprint()
+{
     return hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? ''));
 }

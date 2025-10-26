@@ -137,3 +137,13 @@ if (!function_exists('b64url_encode_strict')) {
         return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
     }
 }
+
+if (!function_exists('check_for_non_alphanum')) {
+    /**
+     *  Remove non-alphanumeric (Can be used for sanitization)
+     */
+    function check_for_non_alphanum($string)
+    {
+        return preg_match("/[^[:alnum:][:space:]]/u", '', $string);
+    }
+}
