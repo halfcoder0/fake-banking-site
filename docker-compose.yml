@@ -1,0 +1,75 @@
+#For SSD (Nexa)
+services:
+    # PHP Service container
+    laravel_php_app:
+        platform: linux/amd64
+        build:
+            args:
+                user: laravel_eleven_user
+                uid: 1000
+            context: .
+            dockerfile: ./Dockerfile
+        image: laravel_eleven_app_image
+        container_name: laravel_php_app
+        restart: unless-stopped
+        depends_on:
+            - postgres_container
+        working_dir: /var/www
+        volumes:
+            -   ./:/var/www
+        networks:
+            - laravel_php_network
+    #nginx service
+    nginx_webserver_container:
+        platform: linux/amd64
+        image: nginx:alpine
+        container_name: nginx_webserver_container
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        depends_on:
+            -   laravel_php_app
+        volumes:
+            -   ./:/var/www
+            - ./docker-compose/nginx/:/etc/nginx/conf.d
+        networks:
+            - laravel_php_network
+
+    #postgres
+    postgres_container:
+        image: postgres:16.10-alpine3.22
+        container_name: postgres_container
+        restart: unless-stopped
+        ports:
+            - "5433:5432"   # host:container
+        environment:
+            POSTGRES_DB: nexabank_db
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: P@ssw0rd
+        volumes:
+            - laravel_postgres_data:/var/lib/postgresql/data
+        networks:
+            - laravel_php_network
+
+    #pgadmin
+    laravel_eleven_pgadmin:
+        image: dpage/pgadmin4
+        container_name: laravel_pgadmin_container
+        restart: unless-stopped
+        ports:
+            - "8383:80"
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@admin.com
+            PGADMIN_DEFAULT_PASSWORD: password
+        depends_on:
+            - postgres_container
+        networks:
+            - laravel_php_network
+
+
+volumes:
+    laravel_postgres_data:
+        driver: local
+networks:
+    laravel_php_network:
+        driver: bridge
