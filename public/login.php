@@ -4,16 +4,8 @@ require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');
 
-$script_hashes = [
-    'sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=',
-    'sha256-98vAGjEDGN79TjHkYWVD4s87rvWkdWLHPs5MC3FvFX4=',
-    'sha256-C8oQVJ33cKtnkARnmeWp6SDChkU+u7KvsNMFUzkkUzk='
-];
-$style_hashes = [
-    'sha256-SYaExfXhqspc1072C5RaeBUps+HeQgzFAdn1JcknIo8='
-];
 $nonce = generate_random();
-add_csp_header($script_hashes, $style_hashes, $nonce);
+add_csp_header($nonce);
 
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['login']) && isset($_POST['csrf_token'])) {
     attempt_auth($_POST);
@@ -35,7 +27,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
     <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/favicon.png">
     <title>Nexabank | Login</title>
     <!-- Custom CSS -->
-    <link href="./dist/css/style.min.css" rel="stylesheet" integrity="sha256-SYaExfXhqspc1072C5RaeBUps+HeQgzFAdn1JcknIo8=" crossorigin="anonymous">
+    <link href="./dist/css/style.min.css" rel="stylesheet" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" crossorigin="anonymous">
 
     <style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
         .auth-wrapper {
@@ -138,10 +130,10 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
         </div>
     </div>
     <!-- All Required js -->
-    <script src="./assets/libs/jquery/dist/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="./assets/libs/jquery/dist/jquery.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" crossorigin="anonymous"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="./assets/libs/popper.js/dist/umd/popper.min.js" integrity="sha256-98vAGjEDGN79TjHkYWVD4s87rvWkdWLHPs5MC3FvFX4=" crossorigin="anonymous"></script>
-    <script src="./assets/libs/bootstrap/dist/js/bootstrap.min.js" integrity="sha256-C8oQVJ33cKtnkARnmeWp6SDChkU+u7KvsNMFUzkkUzk=" crossorigin="anonymous"></script>
+    <script src="./assets/libs/popper.js/dist/umd/popper.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" crossorigin="anonymous"></script>
+    <script src="./assets/libs/bootstrap/dist/js/bootstrap.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" crossorigin="anonymous"></script>
     <!-- This page plugin js -->
     <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
         $('[data-toggle="tooltip"]').tooltip();

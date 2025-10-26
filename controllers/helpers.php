@@ -78,22 +78,15 @@ if (!function_exists('add_csp_header')) {
      *  $script_hashes = list of sha256 hash for scripts (sha256-.....)
      *  $style_hashes = list of sha256 hash for css (sha256-.....)
      */
-    function add_csp_header($script_hashes, $style_hashes, $nonce)
+    function add_csp_header($nonce)
     {
-        $q = static fn($h) => str_starts_with($h, "'") ? $h : ("'" . $h . "'");
-
-        $script_hashes = array_map($q, $script_hashes);
-        $style_hashes  = array_map($q, $style_hashes);
-
         $directives = [
             "script-src " .
                 "'nonce-$nonce' " .
-                "'strict-dynamic' " .
-                implode(' ', $script_hashes) . ' ',
+                "'strict-dynamic' ",
             "style-src " .
                 "'self' " .
-                "'nonce-$nonce' " .
-                implode(' ', $style_hashes),
+                "'nonce-$nonce' ",
             "object-src 'none'",
             "base-uri 'none'",
             "frame-ancestors 'none'",
