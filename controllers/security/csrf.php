@@ -30,6 +30,9 @@ function csrf_input(): string
  */
 function csrf_verify(int $max_age = 7200): bool
 {
+    // Enforce POST for state-changing actions
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') return false;
+    
     // Require same-origin via Origin/Referer hardening
     if (!empty($_SERVER['HTTP_ORIGIN'])) {
         $origin = $_SERVER['HTTP_ORIGIN'];

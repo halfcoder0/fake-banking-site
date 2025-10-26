@@ -5,19 +5,20 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') {
     if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
         // Refuse request unless HTTPS (In prod)
-        // die('HTTPS required');
+        // exit('HTTPS required');
     }
 }
 
-const SESSION_INACTIVITY_LIMIT = 900;    // 15 minutes idle timeout
-const SESSION_ROTATE_INTERVAL  = 600;    // rotate every 10 minutes
+const SESSION_INACTIVITY_LIMIT = 120;    // 15 minutes idle timeout
+const SESSION_ROTATE_INTERVAL  = 60;    // rotate every 10 minutes
 
 configure_session();
 session_start();
 perform_checks();
 
-
-// Configure session & cookie
+/**
+ * Configure session & cookie
+ */
 function configure_session()
 {
     ini_set('session.use_cookies', '1');
@@ -29,6 +30,7 @@ function configure_session()
     ini_set('session.sid_length', '48');               // longer IDs
     ini_set('session.sid_bits_per_character', '6');    // base64-like charset
     ini_set('session.gc_maxlifetime', '1800');         // 30 min server-side storage lifetime
+    ini_set('session.save_path','/var/lib/php/sessions'); // set session save path
 
     $cookieParams = [
         'lifetime' => 0,            // session cookie (dies with browser)
@@ -43,7 +45,9 @@ function configure_session()
     session_name('APPSESSID');
 }
 
-// Perform checks on request
+/** 
+ * Perform checks on request
+ */
 function perform_checks()
 {
     // INIT: Session meta data
@@ -52,17 +56,17 @@ function perform_checks()
             'created'     => time(),
             'last_regen'  => time(),
             'last_seen'   => time(),
-            'fingerprint' => hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|' . ($_SERVER['HTTP_ACCEPT'] ?? '')),
+            'fingerprint' => get_fingerprint(),
             'ip_address'   => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null,
         ];
     }
 
     // Fingerprint Check
-    $current_fp = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|' . ($_SERVER['HTTP_ACCEPT'] ?? ''));
+    $current_fp = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? ''));
     if ($_SESSION['_meta']['fingerprint'] !== $current_fp) kill_session();
 
     // IP Check
-    if ($_SERVER['REMOTE_ADDR'] != $_SESSION['_meta']['ip_address']) kill_session();
+    //if ($_SERVER['REMOTE_ADDR'] != $_SESSION['_meta']['ip_address']) kill_session();
 
     // Inactivity timeout
     if (isset($_SESSION['_meta']['last_seen']) && (time() - $_SESSION['_meta']['last_seen'] > SESSION_INACTIVITY_LIMIT)) kill_session();
@@ -76,15 +80,30 @@ function perform_checks()
     }
 }
 
-// Kill session
+/** 
+ * Kill Session
+ */
 function kill_session()
 {
-    session_unset();
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $p = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires'  => time() - 42000,
+            'path'     => $p['path'] ?? '/',
+            'domain'   => $p['domain'] ?? '',
+            'secure'   => $p['secure'] ?? true,
+            'httponly' => $p['httponly'] ?? true,
+            'samesite' => $p['samesite'] ?? 'Lax',
+        ]);
+    }
     session_destroy();
     session_start();
 }
 
-// Recreate session after login
+/**
+ * Recreate session after hard login
+ */
 function hard_recreate_session(): void
 {
     $old = $_SESSION; // If theres any stuff to carry over
@@ -94,12 +113,14 @@ function hard_recreate_session(): void
         'created'     => time(),
         'last_regen'  => time(),
         'last_seen'   => time(),
-        'fingerprint' => hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|' . ($_SERVER['HTTP_ACCEPT'] ?? '')),
-        'ip_addr'   => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null,
+        'fingerprint' => get_fingerprint(),
+        'ip_address'   => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null,
     ]];
 }
 
-// Secure logout
+/**
+ * Secure logout
+ */
 function session_secure_logout(): void
 {
     $_SESSION = [];
@@ -116,4 +137,11 @@ function session_secure_logout(): void
         ]);
     }
     session_destroy();
+}
+
+/**
+ * Hash User Agent as fingerprint
+ */
+function get_fingerprint(){
+    return hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? ''));
 }

@@ -28,6 +28,9 @@ switch ($request) {
     case '/register':
         require __DIR__ . '/register.php';
         break;
+    case '/db':
+        require __DIR__ . '/../includes/dbconnection.php';
+        break;
     default:
         require __DIR__ . '/404.php';
 }
