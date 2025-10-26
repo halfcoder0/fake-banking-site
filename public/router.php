@@ -1,13 +1,12 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php'; 
+require __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..'); 
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $request = $_SERVER['REQUEST_URI'];
 $controllers = '/../controllers/';
-
 switch ($request) {
     case '':
     case '/':
@@ -18,6 +17,9 @@ switch ($request) {
         break;
     case '/auth/login':
         require __DIR__ . $controllers . 'auth.php';
+        break;
+    case '/transactions':
+        require __DIR__ . $controllers . '/api/transactions.php';
         break;
     case '/dashboard':
         require __DIR__ . '/dashboard.php';
@@ -31,6 +33,7 @@ switch ($request) {
     case '/db':
         require __DIR__ . '/../includes/dbconnection.php';
         break;
+  
     default:
         require __DIR__ . '/404.php';
 }

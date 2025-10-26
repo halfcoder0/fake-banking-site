@@ -49,7 +49,7 @@ $(window).on('load', function () {
 
   $t.DataTable({
     ajax: {
-      url: '/assets/api/transactions.php', 
+      url: '/transactions', 
       dataSrc: '',
       error: function (xhr) {
         console.error('[DT-init] AJAX error', xhr.status, xhr.responseText);
