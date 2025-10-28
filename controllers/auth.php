@@ -5,6 +5,9 @@ require_once('enum.php');
 
 class AuthController
 {
+    const MAX_USERNAME_LEN = 50;
+    const MAX_PASSWORD_LEN = 254;
+
     /**
      * Attempt to authenticate user
      */
@@ -15,6 +18,8 @@ class AuthController
         $username = trim($creds['username'] ?? '');
         $password  = trim($creds['password'] ?? '');
 
+        if (count_chars($username) > AuthController::MAX_USERNAME_LEN) AuthController::return_error('Invalid username/password.');
+        if (count_chars($password) > AuthController::MAX_PASSWORD_LEN) AuthController::return_error('Invalid username/password.');
         if (check_for_non_alphanum($username)) AuthController::return_error('Only alphabets & numbers allowed for username.');
         if ($username === '' || $password === '') AuthController::return_error('Invalid username/password.');
 
@@ -32,7 +37,7 @@ class AuthController
 
         $_SESSION["UserID"] = $user_data["UserID"];
         $_SESSION["Role"] = $user_data["Role"];
-        
+
         AuthController::handle_different_roles($user_data);
 
         AuthController::update_login_time($username);
@@ -56,7 +61,7 @@ class AuthController
                 header('Location: /admin-dashboard');
                 exit;
         }
-        
+
         header('Location: /logout');
         exit;
     }

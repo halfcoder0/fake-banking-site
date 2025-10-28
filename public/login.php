@@ -77,20 +77,22 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
                     <?php endif; ?>
                     <div class="row">
                         <div class="col-12">
-                            <form class="form-horizontal m-t-20" id="loginform" method="POST" action="/login">
+                            <form class="form-horizontal m-t-20 needs-validation" id="loginform" method="POST" action="/login">
                                 <?= csrf_input() ?>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
                                     </div>
-                                    <input name="username" type="text" class="form-control form-control-lg" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" required>
+                                    <input name="username" type="text" maxlength="50" class="form-control form-control-lg" placeholder="Username" aria-label="Username" required>
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="input-group has-validation mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2"><i class="ti-pencil"></i></span>
                                     </div>
-                                    <input name="password" type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" required>
+                                    <input name="password" type="password" maxlength="254" class="form-control form-control-lg" placeholder="Password" aria-label="Password" required>
                                 </div>
+                               
+                                
                                 <!-- TO BE IMPLEMENTED <div class="form-group row">
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">
