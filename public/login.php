@@ -8,7 +8,19 @@ $nonce = generate_random();
 add_csp_header($nonce);
 
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['login']) && isset($_POST['csrf_token'])) {
-    attempt_auth($_POST);
+    try {
+        $auth_controller = new AuthController();
+        $auth_controller->attempt_auth($_POST);
+    } catch (Exception $exception) {
+        $_SESSION["error"] = "Error logging in.";
+        error_log($exception->getMessage());
+        header("Location: /login");
+    } catch (Throwable $thowable) {
+        $_SESSION["error"] = "Error logging in.";
+        error_log($thowable->getMessage());
+        header("Location: /login");
+    }
+
     exit;
 }
 
