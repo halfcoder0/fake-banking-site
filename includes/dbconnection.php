@@ -1,7 +1,7 @@
 <?php
 function get_pdo(): PDO
 {
-    static $pdo = null;
+     $pdo = null;
     if ($pdo === null) {
         try {
             $dsn = sprintf(
