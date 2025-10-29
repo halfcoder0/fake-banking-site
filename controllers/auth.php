@@ -1,5 +1,4 @@
 <?php
-require_once('transfer_controller.php');
 require_once('helpers.php');
 require_once('enum.php');
 
@@ -18,8 +17,8 @@ class AuthController
         $username = trim($creds['username'] ?? '');
         $password  = trim($creds['password'] ?? '');
 
-        if (count_chars($username) > AuthController::MAX_USERNAME_LEN) AuthController::return_error('Invalid username/password.');
-        if (count_chars($password) > AuthController::MAX_PASSWORD_LEN) AuthController::return_error('Invalid username/password.');
+        if (strlen($username) > AuthController::MAX_USERNAME_LEN) AuthController::return_error('Invalid username/password.');
+        if (strlen($password) > AuthController::MAX_PASSWORD_LEN) AuthController::return_error('Invalid username/password.');
         if (check_for_non_alphanum($username)) AuthController::return_error('Only alphabets & numbers allowed for username.');
         if ($username === '' || $password === '') AuthController::return_error('Invalid username/password.');
 
