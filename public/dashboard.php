@@ -729,8 +729,33 @@
                         </div>
                     </div>
                 </div>
+                <!-- Column rendering for balances -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Transaction History</h4>
+                                <h6 class="card-subtitle">Just testing</h6>
+                                <div class="table-responsive">
+                                    <table id="balances_table" class="table table-striped table-bordered display"
+                                        style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Customer</th>
+                                                <th>Account ID</th>
+                                                <th>Account Type</th>
+                                                <th>Balance (SGD)</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
 
-                <!-- Column rendering -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column rendering for transactions -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
