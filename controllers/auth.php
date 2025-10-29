@@ -110,7 +110,6 @@ class AuthController
      */
     private function retrieve_hash(string $username): ?string
     {
-        error_log("Getting hash");
         $query = <<<SQL
         SELECT "Password"
             FROM public."User"
@@ -206,9 +205,10 @@ class AuthController
      */
     public function check_user_role(array $allowed_roles = [Roles::USER], $redirect_url = '/login')
     {
-        $user_role = $_SESSION['Role'] ?? '';
+        if (!isset($_SESSION['Role'])) AuthController::return_error('', $redirect_url);
 
-        if ($user_role === '') AuthController::return_error('', $redirect_url);
+        $user_role = Roles::tryFrom($_SESSION['Role']);
+
         if (!in_array($user_role, $allowed_roles)) AuthController::return_error('', $redirect_url);
     }
 }
