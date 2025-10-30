@@ -1,6 +1,8 @@
 <?php
 require_once('helpers.php');
 require_once('enum.php');
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class AuthController
 {
@@ -60,7 +62,7 @@ class AuthController
       $user_data = AuthController::get_user_info($username);
       if ($user_data === false) AuthController::return_error('Error retrieving user.');
 
-      // ✅ Generate OTP
+      //Generate OTP
       $otp = random_int(100000, 999999);
       $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
@@ -76,8 +78,42 @@ class AuthController
           [':code', $otp, PDO::PARAM_STR],
           [':exp', $expiry, PDO::PARAM_STR]
       ]);
-      //**The issue is here**//
-      // Mark session as pending
+
+      $stmt = DBController::exec_statement(
+          'SELECT "Email" FROM "Customer" WHERE "UserID" = :uid',
+          [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
+      );
+      $row = $stmt->fetch();
+      $email = $row['Email'];
+
+
+
+    // Send OTP via Gmail
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'nexabanksit@gmail.com';      // your Gmail
+        $mail->Password   = 'sbladfbhuspatiiw';        // 16-char App Password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
+        $mail->addAddress($email);         // send to user’s email
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Your Nexabank OTP Code';
+        $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
+        $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
+
+        $mail->send();
+    } catch (Exception $e) {
+        error_log("Mailer Error: {$mail->ErrorInfo}");
+        AuthController::return_error('Unable to send OTP email.');
+    }
+
+
       $_SESSION['pending_user'] = $user_data['UserID'];
       $_SESSION['pending_role'] = $user_data['Role'];
       // Redirect to OTP verification
