@@ -1,8 +1,6 @@
 <?php
-session_start();
+require_once('../controllers/security/session_bootstrap.php');
 require_once('../controllers/db_controller.php');
-echo "<p style='color:blue'>Pending user session: " . htmlspecialchars($_SESSION['pending_user']) . "</p>";
-
 
 $error = '';
 
@@ -17,14 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [[':uid', $userId, PDO::PARAM_STR]]
         );
         $row = $stmt->fetch();
-        // 🔎 Debug: show what OTP we retrieved from DB
-        if ($row) {
-            echo "<p style='color:blue'>Debug: Expected OTP from DB = " . htmlspecialchars($row['Code']) . "</p>";
-            echo "<p style='color:blue'>Debug: Expires At = " . htmlspecialchars($row['ExpiresAt']) . "</p>";
-        } else {
-            echo "<p style='color:red'>Debug: No OTP row found for this user.</p>";
-        }
-
         if ($row && $row['Code'] === $otp && strtotime($row['ExpiresAt']) > time()) {
             // OTP valid → complete login
             $_SESSION['UserID'] = $userId;

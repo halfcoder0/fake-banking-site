@@ -78,7 +78,6 @@ class AuthController
       ]);
       //**The issue is here**//
       // Mark session as pending
-      error_log(json_encode($user_data));
       $_SESSION['pending_user'] = $user_data['UserID'];
       $_SESSION['pending_role'] = $user_data['Role'];
       // Redirect to OTP verification

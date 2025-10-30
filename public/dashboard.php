@@ -1,4 +1,4 @@
-<?php 
+<?php
 require("../controllers/security/session_bootstrap.php");
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
@@ -21,7 +21,7 @@ if ($userid === '' || $role === ''){
   </head>
 <body>
   <div class="wrapper">
-    <h2>Welcome !! <?php echo htmlspecialchars($role . '-' . $userid); ?>
+    <h2>Welcome !! <?php echo htmlspecialchars($role . '-' . $userid. '-'.$role); ?>
       <div class="input-box button">
     <a href="/logout">Logout</a>
   </div>
