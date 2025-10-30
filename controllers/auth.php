@@ -8,9 +8,9 @@ class AuthController
     const MAX_PASSWORD_LEN = 254;
 
     /**
-     * Attempt to authenticate user
+     *  Old Attempt to authenticate user (Without 2FA)
      */
-    public function attempt_auth(array $creds)
+    /**public function attempt_auth(array $creds)
     {
         if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
 
@@ -42,7 +42,49 @@ class AuthController
         AuthController::update_login_time($username);
         error_log(json_encode($_SESSION));
         AuthController::redirect_user($role);
-    }
+    }**/
+
+
+  public function attempt_auth(array $creds)
+  {
+      if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
+
+      $username = trim($creds['username'] ?? '');
+      $password = trim($creds['password'] ?? '');
+
+      $user_hash = AuthController::retrieve_hash($username);
+      if ($user_hash === null || !password_verify($password, $user_hash)) {
+          AuthController::return_error('Invalid username/password.');
+      }
+
+      $user_data = AuthController::get_user_info($username);
+      if ($user_data === false) AuthController::return_error('Error retrieving user.');
+
+      // ✅ Generate OTP
+      $otp = random_int(100000, 999999);
+      $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+      $insertOtp = <<<SQL
+          INSERT INTO "UserOTP" ("UserID", "Code", "ExpiresAt")
+          VALUES (:uid, :code, :exp)
+          ON CONFLICT ("UserID") DO UPDATE
+          SET "Code" = EXCLUDED."Code", "ExpiresAt" = EXCLUDED."ExpiresAt";
+      SQL;
+
+      DBController::exec_statement($insertOtp, [
+          [':uid', $user_data['UserID'], PDO::PARAM_STR],
+          [':code', $otp, PDO::PARAM_STR],
+          [':exp', $expiry, PDO::PARAM_STR]
+      ]);
+      //**The issue is here**//
+      // Mark session as pending
+      error_log(json_encode($user_data));
+      $_SESSION['pending_user'] = $user_data['UserID'];
+      $_SESSION['pending_role'] = $user_data['Role'];
+      // Redirect to OTP verification
+      header("Location: /otp");
+      exit;
+  }
 
     /**
      * Redirect user to appropriate pages

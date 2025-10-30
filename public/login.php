@@ -4,6 +4,7 @@ require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');
 
+
 $nonce = generate_random();
 add_csp_header($nonce);
 
@@ -91,8 +92,8 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
                                     </div>
                                     <input name="password" type="password" maxlength="254" class="form-control form-control-lg" placeholder="Password" aria-label="Password" required>
                                 </div>
-                               
-                                
+
+
                                 <!-- TO BE IMPLEMENTED <div class="form-group row">
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">

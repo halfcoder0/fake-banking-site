@@ -3,7 +3,7 @@ require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..'); 
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $request = $_SERVER['REQUEST_URI'];
@@ -42,6 +42,9 @@ switch ($request) {
         break;
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
+        break;
+    case '/otp':
+        require __DIR__ . '/verify-otp.php';
         break;
     default:
         require __DIR__ . '/404.php';
