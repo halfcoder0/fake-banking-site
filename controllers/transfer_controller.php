@@ -121,13 +121,49 @@ class TransferController
     }
 
     /**
-     * Update Balance for both from & to accounts
+     * Update Balance for both from & to accounts \
+     * Rollback changes & RET error if failure in any steps of transaction
      */
     private function transfer_fund($from_acc, $to_acc, $amount): bool
     {
-        // Start Execution
         DBController::$pdo->beginTransaction();
 
+        TransferController::lock_account_balance($from_acc, $to_acc);
+        TransferController::update_source_acc($from_acc, $amount);
+        TransferController::update_dest_acc($to_acc, $amount);
+        TransferController::insert_transaction_history($from_acc, $to_acc, $amount);
+
+        $success = DBController::$pdo->commit();
+        return $success;
+    }
+
+    /**
+     * Perform row lock on Source & Destination accounts \
+     * to prevent concurrent update operations
+     */
+    private function lock_account_balance($from_acc, $to_acc)
+    {
+        $select_query = <<<SQL
+            SELECT *
+            FROM public."Account"
+            WHERE "AccountID" in (:from_account,:to_account)
+            FOR UPDATE;
+        SQL;
+        $params = [
+            [":from_account", $from_acc, PDO::PARAM_INT],
+            [":to_account", $to_acc, PDO::PARAM_INT]
+        ];
+        $result = DBController::exec_statement($select_query, $params);
+
+        if ($result === false)
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: TO/FROM Account lock failed", Routes::TRANSFER_PAGE->value);
+    }
+
+    /**
+     * Update Source Account
+     */
+    private function update_source_acc($from_acc, $amount)
+    {
         $update_query = <<<SQL
             UPDATE public."Account"
             SET "Balance" = "Balance" - (CAST(:amount AS numeric)::money)
@@ -140,12 +176,18 @@ class TransferController
         ];
         $stmt = DBController::exec_statement($update_query, $params);
 
-        if ($stmt->rowCount() === 0) {
+        if ($stmt->rowCount() !== 1) {
             error_log("Update from account failed");
             DBController::$pdo->rollBack();
             return false;
         }
+    }
 
+    /**
+     * Update Destination Account
+     */
+    private function update_dest_acc($to_acc, $amount)
+    {
         $update_query = <<<SQL
             UPDATE public."Account"
             SET "Balance" = "Balance" + (CAST(:amount AS numeric)::money)
@@ -158,14 +200,42 @@ class TransferController
         ];
         $stmt = DBController::exec_statement($update_query, $params);
 
-        if ($stmt->rowCount() === 0) {
+        if ($stmt->rowCount() !== 1) {
             error_log("Update to account failed");
             DBController::$pdo->rollBack();
             return false;
         }
+    }
 
-        // Commit to execution
-        DBController::$pdo->commit();
-        return true;
+    /**
+     * Insert Transaction History
+     */
+    private function insert_transaction_history($from_acc, $to_acc, $amount)
+    {
+        $ref_num = random_int(0, PHP_INT_MAX);      // Generate secure positive 64-bit INT  
+        $now = new DateTime();
+        $curr_date = $now->format('Y-m-d H:i:s');
+
+        DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+
+        $insert_query = <<<SQL
+            INSERT INTO public."Transaction"(
+                "TransactionID", "ToAccount", "FromAccount", "ReferenceNumber", "TransactionDate", "Amount")
+                VALUES (uuid_generate_v4(), :to_account, :from_account, :ref_num, :curr_date, :amount);
+        SQL;
+        $params = [
+            [":to_account", $to_acc, PDO::PARAM_INT],
+            [":from_account", $from_acc, PDO::PARAM_INT],
+            [":amount", $amount, PDO::PARAM_STR],
+            [":ref_num", $ref_num, PDO::PARAM_INT],
+            [":curr_date", $curr_date, PDO::PARAM_STR]
+        ];
+        $stmt = DBController::exec_statement($insert_query, $params);
+
+        if ($stmt->rowCount() !== 1) {
+            error_log("Update to account failed");
+            DBController::$pdo->rollBack();
+            return false;
+        }
     }
 }
