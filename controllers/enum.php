@@ -13,10 +13,12 @@ enum Roles: string
 enum SessionVariables: string
 {
     case GENERIC_ERROR = 'error';
-    case TRANSFER_ERROR = 'transfer';
+    case TRANSFER_ERROR = 'transfer_error';
     case USER_ID = 'UserID';
     case CUSTOMER_ID = 'CustomerID';
     case SUCCESS = 'success';
+    case DEPOSIT_ERROR = 'deposit_error';
+    case DEPOSIT_SUCCESS = 'deposit_success';
 }
 
 enum Routes: string

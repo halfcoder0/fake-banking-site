@@ -15,6 +15,8 @@ try {
 
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["transfer"]))
         $transfer_controller->process_funds_transfer($own_accounts);
+     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Deposit"]))
+        $transfer_controller->process_deposit_request($own_accounts);
 } catch (Exception $exception) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
     error_log($exception->getMessage() . $exception->getTraceAsString());
@@ -391,7 +393,7 @@ try {
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Fund Transfer</h4>
+                        <h4 class="page-title">Fund Management</h4>
                     </div>
                     <div class="col-7 align-self-center">
                         <div class="d-flex align-items-center justify-content-end">
@@ -400,7 +402,7 @@ try {
                                     <li class="breadcrumb-item">
                                         <a href="#">Home</a>
                                     </li>
-                                    <li class="breadcrumb-item active" aria-current="page">Fund Transfer</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Fund Management</li>
                                 </ol>
                             </nav>
                         </div>
@@ -422,7 +424,7 @@ try {
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header bg-info">
-                                <h4 class="m-b-0 text-white"></h4>
+                                <h4 class="m-b-0 text-white">Transfer funds</h4>
                             </div>
                             <form name="Transfer_own_accounts" action="/transfer" method="POST">
                                 <div class="card-body">
@@ -451,12 +453,12 @@ try {
                                         <div class="col-sm-12 col-xs-12 m-s-5">
                                             <form class="input-form">
                                                 <div class="row">
-                                                    <div class="col-lg-5">
+                                                    <div class="col-lg-6">
                                                         <div class="input-group mb-3">
                                                             <div class="input-group-prepend">
                                                                 <span class="input-group-text">FROM: </span>
                                                             </div>
-                                                            <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                            <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
                                                             <div class="input-group-append">
                                                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
                                                                 <div class="dropdown-menu">
@@ -472,21 +474,21 @@ try {
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <div class="col-lg-5">
+                                                    <div class="col-lg-6">
                                                         <div class="input-group mb-3">
                                                             <div class="input-group-prepend">
                                                                 <span class="input-group-text">TO: </span>
                                                             </div>
-                                                            <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                            <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <div class="col-lg-5 input-group mb-3">
+                                                    <div class="col-lg-6 input-group mb-3">
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">$</span>
                                                         </div>
-                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00" maxlength="14">
                                                     </div>
                                                 </div>
                                             </form>
@@ -494,6 +496,112 @@ try {
                                         <div class="form-actions">
                                             <div class="card-body">
                                                 <button type="submit" class="btn btn-success" name="transfer" value="transfer"> <i class="ti-exchange-vertical"></i>Transfer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header bg-info">
+                                <h4 class="m-b-0 text-white">Deposit funds</h4>
+                            </div>
+                            <form name="Transfer_own_accounts" action="/transfer" method="POST">
+                                <div class="card-body">
+                                    <?php if (isset($_SESSION['transfer_self_error'])): ?>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="alert alert-warning"> <?php echo ($_SESSION[SessionVariables::DEPOSIT_ERROR->value]);
+                                                                                    unset($_SESSION[SessionVariables::DEPOSIT_ERROR->value]); ?>
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">x</span> </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (isset($_SESSION[SessionVariables::DEPOSIT_SUCCESS->value])): ?>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="alert alert-success"> <?php echo ($_SESSION[SessionVariables::DEPOSIT_SUCCESS->value]);
+                                                                                    unset($_SESSION[SessionVariables::DEPOSIT_SUCCESS->value]); ?>
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">x</span> </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                    <h4 class="card-title">Deposit to account</h4>
+                                    <div class="form-body">
+                                        <div class="col-sm-12 col-xs-12 m-s-5">
+                                            <form class="input-form">
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                                                        <div class="input-group mb-3">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">TO: </span>
+                                                            </div>
+                                                            <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
+                                                                <div class="dropdown-menu">
+                                                                    <a class='dropdown-item select-btn'>Select</a>
+                                                                    <?php
+                                                                    foreach ($own_accounts as $account) {
+                                                                        echo "<a class='dropdown-item select-btn'>$account</a>";
+                                                                    }
+                                                                    ?>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-lg-6 input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">$</span>
+                                                        </div>
+                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                    </div>
+                                                </div>
+                                                <hr/>
+                                                <h5 class="card-title">Card details</h5>
+                                                <div class="row">
+                                                    <div class="col-lg-4">
+                                                        <div class="input-group mb-3">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">Card number: </span>
+                                                            </div>
+                                                            <input name="Card_Number" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-lg-2 col-md-3 col-sm-6">
+                                                        <div class="input-group mb-3">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">CVV: </span>
+                                                            </div>
+                                                            <input name="Card_CVV" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-2 col-md-3 col-sm-6">
+                                                        <div class="input-group mb-3">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">Expiry: </span>
+                                                            </div>
+                                                            <input name="Card_Expiry_Month" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                            <div class="form-control m-0">/</div>
+                                                            <input name="Card_Expiry_Year" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="form-actions">
+                                            <div class="card-body">
+                                                <button type="submit" class="btn btn-success" name="Deposit" value="Deposit"> <i class="ti-exchange-vertical"></i>Deposit</button>
                                             </div>
                                         </div>
                                     </div>
