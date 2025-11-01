@@ -2,7 +2,7 @@
 require("../controllers/security/session_bootstrap.php");
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
-error_log(json_encode($_SESSION));
+// error_log(json_encode($_SESSION));
 
 if ($userid === '' || $role === ''){
   error_log('no user.');
@@ -32,7 +32,7 @@ if ($userid === '' || $role === ''){
   <div class="wrapper">
     <h2>Welcome !! <?php echo htmlspecialchars($role . '-' . $userid); ?>
       <div class="input-box button">
-        <a href="/create_account">Create New Account</a>
+        <a href="/create_customer_account">Create New Account</a>
     <a href="/logout">Logout</a>
   </div>
 </h2>
