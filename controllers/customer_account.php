@@ -19,7 +19,7 @@ function create_account($account_details)
     $stmt = $pdo->prepare('SELECT MAX("AccountID") AS max_id FROM public."Account"');
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $max_account_ID = $row['max_id'];  
+    $max_account_ID = $row['max_id'];
     $max_account_ID = $max_account_ID + 1;
 
     // Getting Customer ID using User ID
@@ -29,24 +29,24 @@ function create_account($account_details)
     $customer_id = $stmt->fetch();
     $customer_id = $customer_id['CustomerID'];
 
-    
+
     // Inserting new account into Account table
     $stmt = $pdo->prepare('INSERT INTO public."Account" ("AccountID", "CustomerID", "AccountType", "Balance")
                                VALUES (:AccountID, :CustomerID, :AccountType, :Balance)');
-        $success = $stmt->execute([
-            'AccountID'    => $max_account_ID,
-            'CustomerID'   => $customer_id,
-            'AccountType'    => $account_type,
-            'Balance' => "$500.00"
-        ]);
-        // Success or fail message
-        if ($success) {
-            echo "<script>alert('Account successfully created');</script>";
-            echo "<script>window.location.href ='create_customer_account'</script>";
-        } else {
-            echo "<script>alert('Something Went Wrong. Please try again');</script>";
-            echo "<script>window.location.href ='create_customer_account'</script>";
-        }
+    $success = $stmt->execute([
+        'AccountID'    => $max_account_ID,
+        'CustomerID'   => $customer_id,
+        'AccountType'    => $account_type,
+        'Balance' => "$500.00"
+    ]);
+    // Success or fail message
+    if ($success) {
+        echo "<script>alert('Account successfully created');</script>";
+        echo "<script>window.location.href ='create_customer_account'</script>";
+    } else {
+        echo "<script>alert('Something Went Wrong. Please try again');</script>";
+        echo "<script>window.location.href ='create_customer_account'</script>";
+    }
 
     // redirect_user($role);
 }
@@ -68,14 +68,35 @@ function list_account($userid)
     $stmt->execute();
     // Printing rows of customer's accounts
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>". 
-        htmlspecialchars($row['AccountType']) . "</td><td> " .
-        htmlspecialchars($row['Balance']) . "</td><td>" . 
-        '<form method="POST" action="">' . 
-        '<input type="hidden" name="accountid" value='. ($row['AccountID']) .'>' .
-        '<input name="delete" type="submit" value="Delete"></form></td></tr>';
-  
+        echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>" .
+            htmlspecialchars($row['AccountType']) . "</td><td> " .
+            htmlspecialchars($row['Balance']) . "</td><td>" .
+            '<form method="POST" action="">' .
+            '<input type="hidden" name="accountid" value=' . ($row['AccountID']) . '>' .
+            '<input name="delete" type="submit" value="Delete"></form></td></tr>';
     }
+
+    // If no account, print to show that there's no account, else print the table of accounts
+    // $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    // if ($row) {
+    //     echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>" .
+    //         htmlspecialchars($row['AccountType']) . "</td><td> " .
+    //         htmlspecialchars($row['Balance']) . "</td><td>" .
+    //         '<form method="POST" action="">' .
+    //         '<input type="hidden" name="accountid" value=' . ($row['AccountID']) . '>' .
+    //         '<input name="delete" type="submit" value="Delete"></form></td></tr>';
+
+
+    //     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    //         echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>" .
+    //             htmlspecialchars($row['AccountType']) . "</td><td> " .
+    //             htmlspecialchars($row['Balance']) . "</td><td>" .
+    //             '<form method="POST" action="">' .
+    //             '<input type="hidden" name="accountid" value=' . ($row['AccountID']) . '>' .
+    //             '<input name="delete" type="submit" value="Delete"></form></td></tr>';
+    //     }
+    // } else {
+    // }
 }
 
 // Delete customer's account
