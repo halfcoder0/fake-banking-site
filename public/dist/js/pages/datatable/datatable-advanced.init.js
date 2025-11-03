@@ -36,7 +36,7 @@ $('a.toggle-vis').on('click', function(e) {
 });
 
 //=============================================//
-//    Column rendering for transactions        //
+//    Column rendering                         //
 //=============================================//
 
 $(window).on('load', function () {
@@ -50,7 +50,6 @@ $(window).on('load', function () {
   $t.DataTable({
     ajax: {
       url: '/transactions', 
-      type: 'POST',
       dataSrc: '',
       error: function (xhr) {
         console.error('[DT-init] AJAX error', xhr.status, xhr.responseText);
@@ -76,46 +75,6 @@ $(window).on('load', function () {
     order: [[0, 'desc']],  // sort by newest date
     lengthMenu: [[5,10, 25, 50, 100,-1], [5,10, 25, 50, 100,'All']],
     pageLength: 5,
-    responsive: true
-  });
-});
-
-//=============================================//
-//    Column rendering for balances            //
-//=============================================//
-$(window).on('load', function () {
-  const $b = $('#balances_table');
-  if (!$b.length) return;
-
-  if ($.fn.DataTable.isDataTable($b)) $b.DataTable().clear().destroy();
-
-  $b.DataTable({
-    processing: true,
-    ajax: {
-      url: '/accounts',  
-      type: 'POST',
-      dataSrc: '',                       // because API returns a raw array []
-      error: function (xhr) {
-        console.error('[DT] ACCT AJAX error', xhr.status, xhr.responseText);
-      }
-    },
-    columns: [
-      { data: 'customer_name' },
-      { data: 'account_id' },
-      { data: 'account_type' },
-      {
-        data: 'balance',
-        render: function (d, type) {
-          if (type !== 'display' && type !== 'filter') return d;
-          const n = Number(String(d).replace(/[^0-9.-]/g, ''));
-          return new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD' }).format(n);
-        }
-      }
-    ],
-    order: [[0,'asc'], [2,'asc'], [1,'asc']],
-    lengthMenu: [[5,10,25,50,100,-1],[5,10,25,50,100,'All']],
-    pageLength: 5,
-    dom: 'lfrtip',
     responsive: true
   });
 });

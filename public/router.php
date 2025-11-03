@@ -21,9 +21,6 @@ switch ($request) {
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';
         break;
-    case '/accounts':
-        require __DIR__ . $controllers . '/api/accounts.php';
-        break;
     case '/dashboard':
         require __DIR__ . '/dashboard.php';
         break;
@@ -42,7 +39,7 @@ switch ($request) {
     case '/db':
         require __DIR__ . '/../includes/dbconnection.php';
         break;
-
+  
     default:
         require __DIR__ . '/404.php';
 }
