@@ -13,32 +13,25 @@ if ($userid === '' || $role === ''){
 ?>
 
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | NexaBank</title>
-    <!-- Custom CSS -->
-    <link href="./dist/css/style.min.css" rel="stylesheet" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" crossorigin="anonymous">
+<html dir="ltr" lang="en">
 
-    <style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
-        .auth-wrapper {
-            background: url(./assets/images/big/auth-bg.jpg) no-repeat center center;
-            background-color: #f0f5f9;
-        }
-    </style>
-  </head>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon.png">
+    <title>Balanace and Transaction Dashboard</title>
+    <!-- This page plugin CSS -->
+    <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="dist/css/style.min.css" rel="stylesheet">
+</head>
+
 <body>
-<<<<<<< HEAD
-  <div class="wrapper">
-    <h2>Welcome !! <?php echo htmlspecialchars($role . '-' . $userid); ?>
-      <div class="input-box button">
-        <a href="/create_customer_account">Create New Account</a>
-    <a href="/logout">Logout</a>
-  </div>
-</h2>
-  </div>
-=======
     <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
@@ -750,8 +743,33 @@ if ($userid === '' || $role === ''){
                         </div>
                     </div>
                 </div>
+                <!-- Column rendering for balances -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Transaction History</h4>
+                                <h6 class="card-subtitle">Just testing</h6>
+                                <div class="table-responsive">
+                                    <table id="balances_table" class="table table-striped table-bordered display"
+                                        style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Customer</th>
+                                                <th>Account ID</th>
+                                                <th>Account Type</th>
+                                                <th>Balance (SGD)</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
 
-                <!-- Column rendering -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column rendering for transactions -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -841,6 +859,4 @@ if ($userid === '' || $role === ''){
     <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
     <script src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
->>>>>>> parent of b1a13343 (Dashboard v3.0 Balance Update)
 </body>
-</html>
