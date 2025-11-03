@@ -1,4 +1,5 @@
 <?php
+http_response_code(404);
 require_once('../controllers/helpers.php');
 $nonce = generate_random();
 add_csp_header($nonce);
