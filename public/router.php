@@ -31,6 +31,9 @@ switch ($request) {
     case '/register':
         require __DIR__ . '/register.php';
         break;
+    case '/create_staff':
+        require __DIR__ . '/create_staff.php';
+        break;
     case '/db':
         require __DIR__ . '/../includes/dbconnection.php';
         break;

@@ -1,37 +1,30 @@
 <?php
 //require_once __DIR__ . '/../config/db.php';
-include('../includes/dbconnection.php');
+//include('../controllers/db_controller.php');
 class admin_controller {
-    private $pdo;
-
-    public function __construct() {
-        try {
-            $this->pdo = get_pdo();
+    //private $db_control;
+    // public function __construct() {
+    //     try {
+    //         $db_control = new DBController();
+    //         $db_control->init_db();
             
-        } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
-        }
-    }
+    //     } catch (PDOException $e) {
+    //         die("Database connection failed: " . $e->getMessage());
+    //     }
+    //}
     
 
-    public function getUserStats() {
-    {
-        $select_query = '
-        SELECT "UserID", "Role"
-            FROM public."User"
-            WHERE
-                "Username" = :username
-            LIMIT 1;';
+    public static function getUserStats() {
+    
+        $select_query = 
+        '
+        SELECT count(*) FROM public."User"';
 
-        $pdo = get_pdo();
-        $stmt = $pdo->prepare($select_query);
-        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $stmt->execute();
-
-        $result = $stmt->fetch();
-
+        // $params = array([':username', $username, PDO::PARAM_STR]);
+        $result = DBController::exec_statement($select_query)->fetch();
+        error_log(json_encode($result));
         return $result;
-    }
+    
 
     }
 }

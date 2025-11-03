@@ -1,7 +1,7 @@
 <?php $name='test'; 
 include('../controllers/admin_controller.php');
-//$controller = new UserController();
-//$stats = $controller->getUserStats();
+$controller = new admin_controller();
+$stats = $controller->getUserStats();
 ?>
 
 <!DOCTYPE html>
@@ -246,7 +246,7 @@ include('../controllers/admin_controller.php');
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title m-b-0">Users</h4>
-                                <h2 class="font-light">35,658 <span class="font-16 text-success font-medium">+23%</span></h2>
+                                <h2 class="font-light"><?php echo number_format($stats['count']); ?> <span class="font-16 text-success font-medium">+23%</span></h2>
                                 <div class="m-t-30">
                                     <div class="row text-center">
                                         <div class="col-6 border-right">
