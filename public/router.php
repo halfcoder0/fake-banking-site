@@ -1,6 +1,5 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../controllers/db_controller.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
@@ -8,9 +7,6 @@ $dotenv->load();
 
 $request = $_SERVER['REQUEST_URI'];
 $controllers = '/../controllers/';
-
-DBController::init_db();
-
 switch ($request) {
     case '':
     case '/':
@@ -46,6 +42,7 @@ switch ($request) {
     case '/db':
         require __DIR__ . '/../includes/dbconnection.php';
         break;
+
     default:
         require __DIR__ . '/404.php';
 }

@@ -133,12 +133,10 @@ if (!function_exists('b64url_encode_strict')) {
 
 if (!function_exists('check_for_non_alphanum')) {
     /**
-     *  Check for non-alphanumeric (Can be used for sanitization) \
-     *  Returns true if there is
+     *  Remove non-alphanumeric (Can be used for sanitization)
      */
     function check_for_non_alphanum($string)
     {
         return preg_match("/[^[:alnum:][:space:]]/u", '', $string);
     }
 }
-
