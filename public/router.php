@@ -1,12 +1,12 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
-require_once __DIR__ .'/../controllers/helpers.php';
-require_once __DIR__ .'/../controllers/enum.php';
+require_once __DIR__ . '/../controllers/helpers.php';
+require_once __DIR__ . '/../controllers/enum.php';
 require("../controllers/security/session_bootstrap.php");
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..'); 
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $request = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
@@ -48,6 +48,12 @@ switch ($request) {
         break;
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
+        break;
+    case '/transactions':
+        require __DIR__ . $controllers . '/api/transactions.php';
+        break;
+    case '/accounts':
+        require __DIR__ . $controllers . '/api/accounts.php';
         break;
     default:
         http_response_code(404);

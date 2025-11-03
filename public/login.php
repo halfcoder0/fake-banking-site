@@ -12,7 +12,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
 
 // Check if user is logged in, if yes then go to dashbaord
 if (isset($_SESSION['UserID'])) {
-    header('Location: /dashboard.php');
+    header('Location: /create_customer_account.php');
     exit;
 }
 

@@ -1,15 +1,16 @@
-<?php 
+<?php
 require("../controllers/security/session_bootstrap.php");
+require('../controllers/customer_account.php');
+require_once(__DIR__ . '/../includes/dbconnection.php');
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
-// error_log(json_encode($_SESSION));
 
-if ($userid === '' || $role === ''){
+// Check if user is logged in, if not go back to login
+if ($userid === '' || $role === '') {
   error_log('no user.');
   header('Location: /');
   exit;
 }
-
 ?>
 
 <!DOCTYPE html>
