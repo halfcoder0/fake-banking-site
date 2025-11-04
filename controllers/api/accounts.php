@@ -1,10 +1,10 @@
 <?php
 header('Content-Type: application/json');
-require_once __DIR__ . '/../db_controller.php';
+//require_once __DIR__ . '/../db_controller.php';
 require_once __DIR__ . '/../AccountController.php';
-require_once __DIR__ . '/../security/session_bootstrap.php';
+//require_once __DIR__ . '/../security/session_bootstrap.php';
 
-session_start();
+//session_start();
 
 try {
     // Enforce login

@@ -1,12 +1,10 @@
 <?php
-require_once __DIR__ . '/db_controller.php';
 
 class TransactionController
 {
     public function listTransactions(?string $customerId): array
     {
-        DBController::init_db();
-
+       
         $sql = <<<SQL
           SELECT
             t."TransactionID"                                   AS transaction_id,

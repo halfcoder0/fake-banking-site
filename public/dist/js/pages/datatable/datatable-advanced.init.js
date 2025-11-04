@@ -50,16 +50,10 @@ $(window).on('load', function () {
   $t.DataTable({
     processing: true,
     ajax: {
-      url: '/transactions',    // <-- Your controller endpoint
+      url: '/transactions',    
       type: 'POST',
       dataSrc: '',
-      error: function (xhr) {
-        console.error('[DT] Transactions AJAX Error:', xhr.status, xhr.responseText);
-        if (xhr.status === 401) {
-          alert('Your session has expired. Please log in again.');
-          window.location = '/login';
-        }
-      }
+     
     },
     columns: [
       { data: 'transaction_date', title: 'Date' },
@@ -107,16 +101,10 @@ $(window).on('load', function () {
   $b.DataTable({
     processing: true,
     ajax: {
-      url: '/accounts',   // <-- Your controller endpoint
+      url: '/accounts',  
       type: 'POST',
       dataSrc: '',
-      error: function (xhr) {
-        console.error('[DT] Accounts AJAX Error:', xhr.status, xhr.responseText);
-        if (xhr.status === 401) {
-          alert('Your session has expired. Please log in again.');
-          window.location = '/login';
-        }
-      }
+      
     },
     columns: [
       { data: 'customer_name', title: 'Customer Name' },

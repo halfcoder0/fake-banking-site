@@ -1,10 +1,7 @@
 <?php
 header('Content-Type: application/json');
-require_once __DIR__ . '/../db_controller.php';
 require_once __DIR__ . '/../TransactionController.php';
-require_once __DIR__ . '/../security/session_bootstrap.php';
 
-session_start();
 
 try {
     if (empty($_SESSION['UserID']) || empty($_SESSION['CustomerID'])) {
@@ -21,4 +18,6 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Server error']);
+    error_log($e->getMessage());
+    error_log($e->getTraceAsString());
 }

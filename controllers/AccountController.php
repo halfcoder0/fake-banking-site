@@ -1,12 +1,8 @@
 <?php
-require_once __DIR__ . '/db_controller.php';
-
 class AccountController
 {
     public function listAccounts(?string $customerId): array
     {
-        DBController::init_db();
-
         $sql = <<<SQL
           SELECT
             c."DisplayName"        AS customer_name,

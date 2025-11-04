@@ -1,15 +1,12 @@
 <?php
-require("../controllers/security/session_bootstrap.php");
-require('../controllers/customer_account.php');
-require_once(__DIR__ . '/../includes/dbconnection.php');
-$userid = $_SESSION['UserID'] ?? '';
-$role = $_SESSION['Role'] ?? '';
+require_once('../controllers/security/csrf.php');
+require_once('../controllers/auth.php');
 
-// Check if user is logged in, if not go back to login
-if ($userid === '' || $role === '') {
-  error_log('no user.');
-  header('Location: /');
-  exit;
+try {
+    $auth_controller = new AuthController();
+    $auth_controller->check_user_role([Roles::USER, Roles::ADMIN], "/dashboard");
+} catch (Exception $e) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
 }
 ?>
 
