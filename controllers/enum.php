@@ -19,6 +19,8 @@ enum SessionVariables: string
     case SUCCESS = 'success';
     case DEPOSIT_ERROR = 'deposit_error';
     case DEPOSIT_SUCCESS = 'deposit_success';
+    case WITHDRAW_ERROR = 'withdraw_error';
+    case WITHDRAW_SUCCESS = 'withraw_success';
 }
 
 enum Routes: string
