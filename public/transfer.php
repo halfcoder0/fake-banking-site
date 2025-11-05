@@ -13,11 +13,11 @@ try {
     $transfer_controller = new TransferController();
     $own_accounts = $transfer_controller->get_user_accounts();
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["transfer"]))
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["transfer"]) && csrf_verify())
         $transfer_controller->process_funds_transfer($own_accounts);
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Deposit"]))
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Deposit"]) && csrf_verify())
         $transfer_controller->process_deposit_request($own_accounts);
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Withdraw"]))
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Withdraw"]) && csrf_verify())
         $transfer_controller->process_withdraw_request($own_accounts);
 } catch (Exception $exception) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
@@ -429,6 +429,7 @@ try {
                                 <h4 class="m-b-0 text-white">Transfer funds</h4>
                             </div>
                             <form name="Transfer_own_accounts" action="/transfer" method="POST">
+                                <?= csrf_input() ?>
                                 <div class="card-body">
                                     <?php if (isset($_SESSION[SessionVariables::TRANSFER_ERROR->value])): ?>
                                         <div class="row">
@@ -453,47 +454,45 @@ try {
                                     <h4 class="card-title">Transfer</h4>
                                     <div class="form-body">
                                         <div class="col-sm-12 col-xs-12 m-s-5">
-                                            <form class="input-form">
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">FROM: </span>
-                                                            </div>
-                                                            <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
-                                                            <div class="input-group-append">
-                                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
-                                                                <div class="dropdown-menu">
-                                                                    <a class='dropdown-item select-btn'>Select</a>
-                                                                    <?php
-                                                                    foreach ($own_accounts as $account) {
-                                                                        echo "<a class='dropdown-item select-btn'>$account</a>";
-                                                                    }
-                                                                    ?>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">TO: </span>
-                                                            </div>
-                                                            <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-lg-6 input-group mb-3">
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="input-group mb-3">
                                                         <div class="input-group-prepend">
-                                                            <span class="input-group-text">$</span>
+                                                            <span class="input-group-text">FROM: </span>
                                                         </div>
-                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00" maxlength="14">
+                                                        <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
+                                                            <div class="dropdown-menu">
+                                                                <a class='dropdown-item select-btn'>Select</a>
+                                                                <?php
+                                                                foreach ($own_accounts as $account) {
+                                                                    echo "<a class='dropdown-item select-btn'>$account</a>";
+                                                                }
+                                                                ?>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </form>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">TO: </span>
+                                                        </div>
+                                                        <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6 input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">$</span>
+                                                    </div>
+                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00" maxlength="14">
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-actions">
                                             <div class="card-body">
@@ -513,6 +512,7 @@ try {
                                 <h4 class="m-b-0 text-white">Deposit funds</h4>
                             </div>
                             <form name="Transfer_own_accounts" action="/transfer" method="POST">
+                                <?= csrf_input() ?>
                                 <div class="card-body">
                                     <?php if (isset($_SESSION['transfer_self_error'])): ?>
                                         <div class="row">
@@ -537,69 +537,67 @@ try {
                                     <h4 class="card-title">Deposit to account</h4>
                                     <div class="form-body">
                                         <div class="col-sm-12 col-xs-12 m-s-5">
-                                            <form class="input-form">
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">TO: </span>
-                                                            </div>
-                                                            <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
-                                                            <div class="input-group-append">
-                                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
-                                                                <div class="dropdown-menu">
-                                                                    <a class='dropdown-item select-btn'>Select</a>
-                                                                    <?php
-                                                                    foreach ($own_accounts as $account) {
-                                                                        echo "<a class='dropdown-item select-btn'>$account</a>";
-                                                                    }
-                                                                    ?>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-lg-6 input-group mb-3">
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="input-group mb-3">
                                                         <div class="input-group-prepend">
-                                                            <span class="input-group-text">$</span>
+                                                            <span class="input-group-text">TO: </span>
                                                         </div>
-                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00">
-                                                    </div>
-                                                </div>
-                                                <hr/>
-                                                <h5 class="card-title">Card details</h5>
-                                                <div class="row">
-                                                    <div class="col-lg-4">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">Card number: </span>
+                                                        <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
+                                                            <div class="dropdown-menu">
+                                                                <a class='dropdown-item select-btn'>Select</a>
+                                                                <?php
+                                                                foreach ($own_accounts as $account) {
+                                                                    echo "<a class='dropdown-item select-btn'>$account</a>";
+                                                                }
+                                                                ?>
                                                             </div>
-                                                            <input name="Card_Number" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-lg-2 col-md-3 col-sm-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">CVV: </span>
-                                                            </div>
-                                                            <input name="Card_CVV" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-2 col-md-3 col-sm-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">Expiry: </span>
-                                                            </div>
-                                                            <input name="Card_Expiry_Month" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
-                                                            <div class="form-control m-0">/</div>
-                                                            <input name="Card_Expiry_Year" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </form>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6 input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">$</span>
+                                                    </div>
+                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                </div>
+                                            </div>
+                                            <hr />
+                                            <h5 class="card-title">Card details</h5>
+                                            <div class="row">
+                                                <div class="col-lg-4">
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">Card number: </span>
+                                                        </div>
+                                                        <input name="Card_Number" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">CVV: </span>
+                                                        </div>
+                                                        <input name="Card_CVV" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                                    <div class="input-group mb-3">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text">Expiry: </span>
+                                                        </div>
+                                                        <input name="Card_Expiry_Month" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <div class="form-control m-0">/</div>
+                                                        <input name="Card_Expiry_Year" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-actions">
                                             <div class="card-body">
@@ -619,6 +617,7 @@ try {
                                 <h4 class="m-b-0 text-white">Withdraw funds</h4>
                             </div>
                             <form name="Transfer_own_accounts" action="/transfer" method="POST">
+                                <?= csrf_input() ?>
                                 <div class="card-body">
                                     <?php if (isset($_SESSION[SessionVariables::WITHDRAW_ERROR->value])): ?>
                                         <div class="row">
@@ -643,37 +642,35 @@ try {
                                     <h4 class="card-title">Withdraw from account</h4>
                                     <div class="form-body">
                                         <div class="col-sm-12 col-xs-12 m-s-5">
-                                            <form class="input-form">
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="input-group mb-3">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text">FROM: </span>
-                                                            </div>
-                                                            <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
-                                                            <div class="input-group-append">
-                                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
-                                                                <div class="dropdown-menu">
-                                                                    <a class='dropdown-item select-btn'>Select</a>
-                                                                    <?php
-                                                                    foreach ($own_accounts as $account) {
-                                                                        echo "<a class='dropdown-item select-btn'>$account</a>";
-                                                                    }
-                                                                    ?>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-lg-6 input-group mb-3">
+                                            <div class="row">
+                                                <div class="col-lg-6">
+                                                    <div class="input-group mb-3">
                                                         <div class="input-group-prepend">
-                                                            <span class="input-group-text">$</span>
+                                                            <span class="input-group-text">FROM: </span>
                                                         </div>
-                                                        <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                        <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
+                                                            <div class="dropdown-menu">
+                                                                <a class='dropdown-item select-btn'>Select</a>
+                                                                <?php
+                                                                foreach ($own_accounts as $account) {
+                                                                    echo "<a class='dropdown-item select-btn'>$account</a>";
+                                                                }
+                                                                ?>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </form>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-6 input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">$</span>
+                                                    </div>
+                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-actions">
                                             <div class="card-body">
