@@ -1,8 +1,8 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
-require_once __DIR__ . '/../controllers/helpers.php';
-require_once __DIR__ . '/../controllers/enum.php';
+require_once __DIR__ .'/../controllers/helpers.php';
+require_once __DIR__ .'/../controllers/enum.php';
 require("../controllers/security/session_bootstrap.php");
 use Dotenv\Dotenv;
 

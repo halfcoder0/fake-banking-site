@@ -173,7 +173,7 @@ if (!function_exists('redirect_with_error')) {
      */
     function redirect_with_error($msg = '', $log_msg = '', $redirect = NULL, $session_var = '')
     {   
-        $session_var = $session_var ? '' : SessionVariables::GENERIC_ERROR->value;
+        if ($session_var === '') SessionVariables::GENERIC_ERROR->value;
         if ($msg !== '') $_SESSION[$session_var] = $msg;
         if ($log_msg !== '') error_log($log_msg);
         

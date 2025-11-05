@@ -16,12 +16,14 @@ enum TransactionType: string
 {
     case TRANSFER = "TRANSFER";
     case DEPOSIT = "DEPOSIT";
+    case WITHDRAW = "WITHDRAW";
 }
 
 class TransferController
 {
     private const TRANSFER_SUCCESS_MSG = "Funds have been transferred!";
     private const DEPOSIT_SUCCESS_MSG = "Funds have been added!";
+    private const WITHDRAW_SUCCESS_MSG = "Funds have been withdrawn!";
     /**
      * Get accounts owned by user
      */
@@ -95,6 +97,24 @@ class TransferController
      */
     private function attempt_transfer_funds($from_acc, $to_acc, $amount)
     {
+        $from_balance = TransferController::get_balance($from_acc);
+
+        if ($from_balance === false)
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: Balance conversion FROM_account failed.", Routes::TRANSFER_PAGE->value);
+        if ($amount > $from_balance)
+            redirect_with_error(TransferErrorMsg::INSUFFICENT_BALANCE->value, "Transfer: Transfer amt > from_balance", Routes::TRANSFER_PAGE->value);
+        if ($from_acc === $to_acc)
+            redirect_with_error(TransferErrorMsg::SAME_TO_FROM_ACC->value, '', Routes::TRANSFER_PAGE->value);
+
+        $success = TransferController::transfer_fund($from_acc, $to_acc, $amount);
+        if ($success === false)
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: Error updating acc balances", Routes::TRANSFER_PAGE->value);
+
+        $_SESSION[SessionVariables::SUCCESS->value] = TransferController::TRANSFER_SUCCESS_MSG;
+    }
+
+    private function get_balance($from_acc)
+    {
         $get_balance_query = <<<SQL
             SELECT "Balance"
             FROM public."Account"
@@ -110,18 +130,7 @@ class TransferController
 
         $from_balance = filter_var($result["Balance"], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
-        if ($from_balance === false)
-            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: Balance conversion FROM_account failed.", Routes::TRANSFER_PAGE->value);
-        if ($amount > $from_balance)
-            redirect_with_error(TransferErrorMsg::INSUFFICENT_BALANCE->value, "Transfer: Transfer amt > from_balance", Routes::TRANSFER_PAGE->value);
-        if ($from_acc === $to_acc)
-            redirect_with_error(TransferErrorMsg::SAME_TO_FROM_ACC->value, '', Routes::TRANSFER_PAGE->value);
-
-        $success = TransferController::transfer_fund($from_acc, $to_acc, $amount);
-        if ($success === false)
-            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: Error updating acc balances", Routes::TRANSFER_PAGE->value);
-
-        $_SESSION[SessionVariables::SUCCESS->value] = TransferController::TRANSFER_SUCCESS_MSG;
+        return $from_balance;
     }
 
     /**
@@ -262,7 +271,7 @@ class TransferController
 
         $success = TransferController::deposit_money($account_id, $amount);
         if ($success === false)
-            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST, $validation_error[2], Routes::TRANSFER_PAGE->value, SessionVariables::DEPOSIT_ERROR->value);
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, $validation_error[2], Routes::TRANSFER_PAGE->value, SessionVariables::DEPOSIT_ERROR->value);
 
         $_SESSION[SessionVariables::DEPOSIT_SUCCESS->value] = TransferController::DEPOSIT_SUCCESS_MSG;
     }
@@ -349,6 +358,69 @@ class TransferController
         TransferController::lock_account_balance([$account_id, 0]);
         TransferController::increase_acc_balance($account_id, $amount);
         TransferController::insert_transaction_history(0, $account_id, $amount, TransactionType::DEPOSIT->value);
+
+        return DBController::$pdo->commit();
+    }
+
+    /**
+     * Process withdraw
+     */
+    public function process_withdraw_request($own_accounts)
+    {
+        $account_id = $_POST["FROM_account"];
+        $amount = trim($_POST["Amount"]);
+
+        $validation_error = TransferController::validate_withdraw_details($own_accounts, $account_id, $amount);
+        if ($validation_error[0] == false)
+            redirect_with_error($validation_error[1], $validation_error[2], Routes::TRANSFER_PAGE->value, SessionVariables::WITHDRAW_ERROR->value);
+
+        // Check sufficent balance
+        $from_balance = TransferController::get_balance($account_id);
+        if ($from_balance === false)
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, "Transfer: Balance conversion FROM_account failed.", Routes::TRANSFER_PAGE->value, SessionVariables::WITHDRAW_ERROR->value);
+        if ($amount > $from_balance)
+            redirect_with_error(TransferErrorMsg::INSUFFICENT_BALANCE->value, "Transfer: Transfer amt > from_balance", Routes::TRANSFER_PAGE->value, SessionVariables::WITHDRAW_ERROR->value);
+
+        $success = TransferController::withdraw_money($account_id, $amount);
+        if ($success === false)
+            redirect_with_error(TransferErrorMsg::ERROR_WITH_REQUEST->value, $validation_error[2], Routes::TRANSFER_PAGE->value, SessionVariables::WITHDRAW_ERROR->value);
+
+        $_SESSION[SessionVariables::WITHDRAW_SUCCESS->value] = TransferController::WITHDRAW_SUCCESS_MSG;
+    }       
+
+    /**
+     * Validate Withdraw details
+     */
+    private function validate_withdraw_details($own_accounts, &$account_id, &$amount)
+    {
+        if (!is_valid_money($amount))
+            return [false, TransferErrorMsg::INVALID_INPUT->value, 'Deposit: not valid money'];
+
+        $acc_options = ['options' => ['min_range' => 1]];
+        $account_id = filter_var($account_id, FILTER_VALIDATE_INT, $acc_options);
+
+        if ($account_id === false)
+            return [false, TransferErrorMsg::INVALID_ACCOUNT_NUM->value, 'Withdraw: Invalid Account num'];
+        if ($amount === false)
+            return [false, TransferErrorMsg::INVALID_AMOUNT->value, 'Withdraw: Invalid amt'];
+        if ($amount < 0)
+            return [false, TransferErrorMsg::INVALID_AMOUNT->value, 'Withdraw: Invalid amt'];
+        if (!in_array($account_id, $own_accounts))
+            return [false, TransferErrorMsg::INVALID_ACCOUNT_NUM->value, 'Deposit: Invalid input - not an account linked to user'];
+
+        return [true, '', ''];
+    }
+
+    /**
+     * Withdraw money from account
+     */
+    private function withdraw_money($account_id, $amount)
+    {
+        DBController::$pdo->beginTransaction();
+
+        TransferController::lock_account_balance([$account_id, 0]);
+        TransferController::decrease_acc_balance($account_id, $amount);
+        TransferController::insert_transaction_history($account_id, 0, $amount, TransactionType::WITHDRAW->value);
 
         return DBController::$pdo->commit();
     }
