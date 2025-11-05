@@ -140,3 +140,19 @@ if (!function_exists('check_for_non_alphanum')) {
         return preg_match("/[^[:alnum:][:space:]]/u", '', $string);
     }
 }
+
+if (!function_exists('check_for_account_type')) {
+    /**
+     *  Only allow Checking, Investment, and Savings account types
+     */
+    function check_for_account_type($string)
+    {
+        $account_types = ["Checking", "Investment", "Savings"];
+        if (in_array($string, $account_types)) {
+            return True;
+        } else {
+            return False;
+        }
+    }
+}
+
