@@ -12,7 +12,7 @@ try {
 
     DBController::init_db();
     $ctrl = new TransactionController();
-    $rows = $ctrl->listTransactions($_SESSION['CustomerID']); // me as sender/receiver
+    $rows = $ctrl->listTransactions($_SESSION['CustomerID']); 
     echo json_encode($rows, JSON_UNESCAPED_UNICODE);
 
 } catch (Throwable $e) {
