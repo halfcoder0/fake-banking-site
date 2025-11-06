@@ -1,8 +1,10 @@
-<?php $name='test'; 
+<?php $name='test';
 include('../controllers/admin_controller.php');
 $controller = new admin_controller();
 $stats = $controller->getUserStats();
+//error_log(json_encode($_SESSION));
 ?>
+
 
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
@@ -10,6 +12,7 @@ $stats = $controller->getUserStats();
 <?php
         include('../includes/admin_header.php');
 ?>
+
 
 <body>
     <!-- ============================================================== -->
@@ -61,12 +64,23 @@ $stats = $controller->getUserStats();
                             <div class="card-body">
                                 <h3 class="card-title text-center m-b-30">Create Staff Account</h3>
 
-                                <form class="form-horizontal m-t-20" action="../controllers/StaffController.php" method="POST">
-                                    <!-- Name -->
+                                <form class="form-horizontal m-t-20" action="/admin_controller" method="POST">
+                                    <!-- Hidden action -->
+                                    <input type="hidden" name="action" value="create_staff">
+
+                                    <!-- Username -->
                                     <div class="form-group row">
                                         <div class="col-12">
-                                            <label for="name" class="font-weight-bold">Full Name</label>
-                                            <input class="form-control form-control-lg" type="text" id="name" name="name" required placeholder="Enter staff name">
+                                            <label for="name" class="font-weight-bold">Username</label>
+                                            <input class="form-control form-control-lg" type="text" id="name" name="name" required value="staff2" placeholder="Enter username">
+                                        </div>
+                                    </div>
+
+                                    <!-- Display Name -->
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <label for="display_name" class="font-weight-bold">Display Name</label>
+                                            <input class="form-control form-control-lg" type="text" id="display_name" name="display_name" required value="Staff Two" placeholder="Enter display name">
                                         </div>
                                     </div>
 
@@ -74,7 +88,23 @@ $stats = $controller->getUserStats();
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <label for="email" class="font-weight-bold">Email</label>
-                                            <input class="form-control form-control-lg" type="email" id="email" name="email" required placeholder="Enter staff email">
+                                            <input class="form-control form-control-lg" type="email" id="email" name="email" required value="staff2@nexabank.com" placeholder="Enter staff email">
+                                        </div>
+                                    </div>
+
+                                    <!-- Date of Birth -->
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <label for="dob" class="font-weight-bold">Date of Birth</label>
+                                            <input class="form-control form-control-lg" type="date" id="dob" name="dob" value="1995-07-15">
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact -->
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <label for="contact" class="font-weight-bold">Contact Number</label>
+                                            <input class="form-control form-control-lg" type="text" id="contact" name="contact" value="91234567" placeholder="Enter contact number">
                                         </div>
                                     </div>
 
@@ -82,7 +112,7 @@ $stats = $controller->getUserStats();
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <label for="password" class="font-weight-bold">Password</label>
-                                            <input class="form-control form-control-lg" type="password" id="password" name="password" required placeholder="Enter password">
+                                            <input class="form-control form-control-lg" type="password" id="password" name="password" required value="TestPass123!" placeholder="Enter password">
                                         </div>
                                     </div>
 
@@ -90,7 +120,7 @@ $stats = $controller->getUserStats();
                                     <div class="form-group row">
                                         <div class="col-12">
                                             <label for="confirm_password" class="font-weight-bold">Confirm Password</label>
-                                            <input class="form-control form-control-lg" type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm password">
+                                            <input class="form-control form-control-lg" type="password" id="confirm_password" name="confirm_password" required value="TestPass123!" placeholder="Confirm password">
                                         </div>
                                     </div>
 
@@ -100,26 +130,13 @@ $stats = $controller->getUserStats();
                                             <label for="role" class="font-weight-bold">Role</label>
                                             <select class="form-control form-control-lg" id="role" name="role" required>
                                                 <option value="">-- Select Role --</option>
-                                                <option value="staff">Staff</option>
-                                                <option value="manager">Manager</option>
+                                                <option value="staff" selected>Staff</option>
                                                 <option value="admin">Admin</option>
                                             </select>
                                         </div>
                                     </div>
 
-                                    <!-- Agreement -->
-                                    <div class="form-group row">
-                                        <div class="col-md-12">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="terms" required>
-                                                <label class="custom-control-label" for="terms">
-                                                    I agree to all <a href="#">Terms & Conditions</a>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Submit Button -->
+                                    <!-- Submit -->
                                     <div class="form-group text-center">
                                         <div class="col-xs-12 p-b-20">
                                             <button class="btn btn-block btn-lg btn-info" type="submit">Create Staff</button>
@@ -127,6 +144,8 @@ $stats = $controller->getUserStats();
                                     </div>
                                 </form>
 
+
+                                
                             </div>
                         </div>
                     </div>
@@ -142,7 +161,7 @@ $stats = $controller->getUserStats();
             <!-- footer -->
             <!-- ============================================================== -->
             <?php
-                include('../includes/footer.php');
+                include('../includes/admin_footer.php');
             ?>
             <!-- ============================================================== -->
             <!-- End footer -->
@@ -193,5 +212,12 @@ $stats = $controller->getUserStats();
     <script src="../../assets/extra-libs/jvector/jquery-jvectormap-world-mill-en.js"></script>
     <script src="../../dist/js/pages/dashboards/dashboard1.js"></script>
 </body>
+<?php
+if (isset($_SESSION["create_staff_status"])): ?>
+    <script>
+        alert("<?= addslashes($_SESSION["create_staff_status"]) ?>");
+    </script>
+    <?php unset($_SESSION["create_staff_status"]); // clear after use ?>
+<?php endif; ?>
 
 </html>

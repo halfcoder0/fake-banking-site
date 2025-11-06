@@ -1,4 +1,5 @@
-<?php $name='test'; 
+<?php $name='test';
+
 include('../controllers/admin_controller.php');
 $controller = new admin_controller();
 $stats = $controller->getUserStats();
@@ -246,7 +247,7 @@ $stats = $controller->getUserStats();
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title m-b-0">Users</h4>
-                                <h2 class="font-light"><?php echo number_format($stats['count']); ?> <span class="font-16 text-success font-medium">+23%</span></h2>
+                                <h2 class="font-light"><?php echo number_format($stats['count']); ?></h2>
                                 <div class="m-t-30">
                                     <div class="row text-center">
                                         <div class="col-6 border-right">
@@ -275,7 +276,7 @@ $stats = $controller->getUserStats();
             <!-- footer -->
             <!-- ============================================================== -->
             <?php
-                include('../includes/footer.php');
+                include('../includes/admin_footer.php');
             ?>
             <!-- ============================================================== -->
             <!-- End footer -->

@@ -34,6 +34,9 @@ switch ($request) {
     case '/create_staff':
         require __DIR__ . '/create_staff.php';
         break;
+    case '/update_staff':
+        require __DIR__ . '/update_staff.php';
+        break;
     case '/db':
         require __DIR__ . '/../includes/dbconnection.php';
         break;
@@ -45,6 +48,9 @@ switch ($request) {
         break;
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
+        break;
+    case '/admin_controller':
+        require __DIR__ .'/../controllers/admin_controller.php';
         break;
     default:
         require __DIR__ . '/404.php';
