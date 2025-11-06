@@ -28,6 +28,9 @@ switch ($request) {
     case '/create_customer_account':
         require __DIR__ . '/create_customer_account.php';
         break;
+    case '/delete_customer_account':
+        require __DIR__ . '/delete_customer_account.php';
+        break;
     case '/customer_account':
         require __DIR__ . $controllers . 'customer_account.php';
         break;

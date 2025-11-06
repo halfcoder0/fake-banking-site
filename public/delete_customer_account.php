@@ -36,7 +36,7 @@ if (isset($_POST['delete'])) {
 
 <body>
   <div class="wrapper">
-    <h2>Customer Account Creation <?php  //echo htmlspecialchars($role . '-' . $userid); ?>
+    <h2>Customer Account Deletion 
                     
 </h2>
       <table border="1">
@@ -44,31 +44,15 @@ if (isset($_POST['delete'])) {
           <th>Account ID</th>
           <th>Account Type</th>
           <th>Balance</th>
+          <th></th>
         </tr>
         <?php
-        list_account($userid); // List customer accounts in a table
+        list_account_to_delete($userid); // List customer accounts in a table
         ?>
-
       </table>
-
-      <div class="input-box button">
-
-        <!-- Form submission for new account creation -->
-        <form method="POST" action="">
-          <label>Choose account type:</label>
-          <select id="account" name="account">
-            <option name="account">Checking</option>
-            <option name="account">Savings</option>
-            <option name="account">Investment</option>
-            <input type="hidden" name="userid" value="<?php echo htmlspecialchars($userid); ?>">
-          </select>
-          <br>
-          <input name="submit" type="submit" value="Submit">
-        </form>
 
         <a href="/dashboard">Back to Dashboard</a>
         <a href="/logout">Logout</a>
-      </div>
     
   </div>
 </body>

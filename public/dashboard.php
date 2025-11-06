@@ -32,7 +32,8 @@ if ($userid === '' || $role === ''){
   <div class="wrapper">
     <h2>Welcome !! <?php echo htmlspecialchars($role . '-' . $userid); ?>
       <div class="input-box button">
-        <a href="/create_customer_account">Create New Account</a>
+        <a href="/create_customer_account">Create New Account</a> <br>
+        <a href="/delete_customer_account">Delete Bank Account</a> <br>
     <a href="/logout">Logout</a>
   </div>
 </h2>

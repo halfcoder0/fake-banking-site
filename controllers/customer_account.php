@@ -88,6 +88,33 @@ function list_account($userid)
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>" .
             htmlspecialchars($row['AccountType']) . "</td><td> " .
+            htmlspecialchars($row['Balance']) . "</td></tr>";
+    }
+
+}
+
+// Listing customer's accounts as a table with delete option
+function list_account_to_delete($userid)
+{
+    // Getting and santizing submitted parameters
+    $userid  = remove_non_alphanum($userid);
+
+    $pdo = get_pdo();
+    // Getting Customer ID using session User ID
+    $stmt = $pdo->prepare('SELECT "CustomerID" FROM public."Customer" WHERE "UserID" = :userid');
+    $stmt->bindParam(':userid', $userid, PDO::PARAM_STR);
+    $stmt->execute();
+    $customer_id = $stmt->fetch();
+    $customer_id = $customer_id['CustomerID'];
+
+    // Getting customers account
+    $stmt = $pdo->prepare('SELECT * FROM public."Account" WHERE "CustomerID" = :customerid');
+    $stmt->bindParam(':customerid', $customer_id, PDO::PARAM_STR);
+    $stmt->execute();
+    // Printing rows of customer's accounts
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "<tr><td>" . htmlspecialchars($row['AccountID']) . "</td><td>" .
+            htmlspecialchars($row['AccountType']) . "</td><td> " .
             htmlspecialchars($row['Balance']) . "</td><td>" .
             '<form method="POST" action="">' .
             '<input type="hidden" name="accountid" value=' . ($row['AccountID']) . '>' .
@@ -123,9 +150,9 @@ function delete_account($account_details)
     // Message if deletion was successful or failed
     if ($stmt->rowCount() > 0) {
         echo "<script>alert('Account successfully deleted');</script>";
-        echo "<script>window.location.href ='create_customer_account'</script>";
+        echo "<script>window.location.href ='delete_customer_account'</script>";
     } else {
         echo "<script>alert('Something Went Wrong. Please try again');</script>";
-        echo "<script>window.location.href ='create_customer_account'</script>";
+        echo "<script>window.location.href ='delete_customer_account'</script>";
     }
 }
