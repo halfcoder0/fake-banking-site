@@ -1,7 +1,5 @@
-<?php $name='test';
+<?php
 include('../controllers/admin_controller.php');
-$controller = new admin_controller();
-$stats = $controller->getUserStats();
 //error_log(json_encode($_SESSION));
 ?>
 
