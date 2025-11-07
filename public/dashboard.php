@@ -2,16 +2,19 @@
 require_once('../controllers/security/csrf.php');
 require_once('../controllers/auth.php');
 
+$nonce = generate_random();
+add_csp_header($nonce);
+
 try {
     $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER], "/dashboard");
+    $auth_controller->check_user_role([Roles::USER]);
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
 }
 ?>
 
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -22,16 +25,14 @@ try {
     <meta name="author" content="">
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon.png">
-    <title>Balanace and Transaction Dashboard</title>
+    <title>Nexabank | User Dashboard</title>
     <!-- This page plugin CSS -->
-    <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="dist/css/style.min.css" rel="stylesheet">
+    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="dist/css/style.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
     <div class="preloader">
         <div class="lds-ripple">
@@ -40,11 +41,7 @@ try {
         </div>
     </div>
     <!-- ============================================================== -->
-    <!-- Main wrapper - style you can find in pages.scss -->
-    <!-- ============================================================== -->
     <div id="main-wrapper">
-        <!-- ============================================================== -->
-        <!-- Topbar header - style you can find in pages.scss -->
         <!-- ============================================================== -->
         <header class="topbar">
             <nav class="navbar top-navbar navbar-expand-md navbar-dark">
@@ -53,8 +50,6 @@ try {
                     <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)">
                         <i class="ti-menu ti-close"></i>
                     </a>
-                    <!-- ============================================================== -->
-                    <!-- Logo -->
                     <!-- ============================================================== -->
                     <div class="navbar-brand">
                         <a href="#" class="logo">
@@ -67,20 +62,8 @@ try {
                                 <img src="assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
                             </b>
                             <!--End Logo icon -->
-                            <!-- Logo text -->
-                            <span class="logo-text">
-                                <!-- dark Logo text -->
-                                <img src="assets/images/logo-text.png" alt="homepage" class="dark-logo" />
-                                <!-- Light Logo text -->
-                                <img src="assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
-                            </span>
                         </a>
                     </div>
-                    <!-- ============================================================== -->
-                    <!-- End Logo -->
-                    <!-- ============================================================== -->
-                    <!-- ============================================================== -->
-                    <!-- Toggle which is visible on mobile only -->
                     <!-- ============================================================== -->
                     <a class="topbartoggler d-block d-md-none waves-effect waves-light" href="javascript:void(0)"
                         data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -89,16 +72,8 @@ try {
                     </a>
                 </div>
                 <!-- ============================================================== -->
-                <!-- End Logo -->
-                <!-- ============================================================== -->
-
             </nav>
         </header>
-        <!-- ============================================================== -->
-        <!-- End Topbar header -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Left Sidebar - style you can find in sidebar.scss  -->
         <!-- ============================================================== -->
         <aside class="left-sidebar">
             <!-- Sidebar scroll-->
@@ -674,28 +649,21 @@ try {
             <!-- End Sidebar scroll-->
         </aside>
         <!-- ============================================================== -->
-        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
         <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Bread crumb and right sidebar toggle -->
             <!-- ============================================================== -->
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Advanced Initialisation</h4>
+                        <h4 class="page-title">Dashboard</h4>
                     </div>
                     <div class="col-7 align-self-center">
                         <div class="d-flex align-items-center justify-content-end">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item">
-                                        <a href="#">Home</a>
+                                        <a href="#">User</a>
                                     </li>
-                                    <li class="breadcrumb-item active" aria-current="page">Advanced Initialisation</li>
+                                    <li class="breadcrumb-item active" aria-current="page">Overview</li>
                                 </ol>
                             </nav>
                         </div>
@@ -703,51 +671,15 @@ try {
                 </div>
             </div>
             <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
             <div class="container-fluid">
-                <!-- ============================================================== -->
                 <!-- Start Page Content -->
-                <!-- ============================================================== -->
-                <!-- File export -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">File export</h4>
-                                <h6 class="card-subtitle">Exporting data from a table can often be a key part of a
-                                    complex application. The Buttons extension for DataTables provides three plug-ins
-                                    that provide overlapping functionality for data export. You can refer full
-                                    documentation from here <a href="https://datatables.net/">Datatables</a></h6>
-                                <div class="table-responsive">
-                                    <table id="file_export" class="table table-striped table-bordered display">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Position</th>
-                                                <th>Office</th>
-                                                <th>Age</th>
-                                                <th>Start date</th>
-                                                <th>Salary</th>
-                                            </tr>
-                                        </thead>
-
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- Column rendering for balances -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Transaction History</h4>
-                                <h6 class="card-subtitle">Just testing</h6>
+                                <h4 class="card-title">Account Balances</h4>
+                                <h6 class="card-subtitle"></h6>
                                 <div class="table-responsive">
                                     <table id="balances_table" class="table table-striped table-bordered display"
                                         style="width:100%">
@@ -773,7 +705,6 @@ try {
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Transaction History</h4>
-                                <h6 class="card-subtitle">Just testing</h6>
                                 <div class="table-responsive">
                                     <table id="col_render" class="table table-striped table-bordered display"
                                         style="width:100%">
@@ -794,67 +725,34 @@ try {
                         </div>
                     </div>
                 </div>
-
-                <!-- ============================================================== -->
-                <!-- End PAge Content -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Right sidebar -->
-                <!-- ============================================================== -->
-                <!-- .right-sidebar -->
-                <!-- ============================================================== -->
-                <!-- End Right sidebar -->
                 <!-- ============================================================== -->
             </div>
-            <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer text-center">
-                All Rights Reserved by Nice admin. Designed and Developed by
-                <a href="https://wrappixel.com">WrapPixel</a>.
-            </footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
         </div>
-        <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
-    <!-- End Wrapper -->
-
-    <!-- ============================================================== -->
-    <!-- All Jquery -->
-    <!-- ============================================================== -->
-    <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="../../dist/js/app.min.js"></script>
-    <script src="../../dist/js/app.init.horizontal.js"></script>
-    <script src="../../dist/js/app-style-switcher.horizontal.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.init.horizontal.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app-style-switcher.horizontal.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="../../assets/extra-libs/sparkline/sparkline.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="../../dist/js/waves.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/waves.js"></script>
     <!--Custom JavaScript -->
-    <script src="../../dist/js/custom.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/custom.min.js"></script>
     <!--This page plugins -->
-    <script src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
     <!-- start - This is for export functionality only -->
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
-    <script src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 </body>

@@ -8,7 +8,7 @@ add_csp_header($nonce);
 
 try {
     $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER, Roles::ADMIN], "/dashboard");
+    $auth_controller->check_user_role([Roles::USER], "/dashboard");
 
     $transfer_controller = new TransferController();
     $own_accounts = $transfer_controller->get_user_accounts();
@@ -460,7 +460,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">FROM: </span>
                                                         </div>
-                                                        <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
+                                                        <input name="FROM_account" type="number" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30" required>
                                                         <div class="input-group-append">
                                                             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
                                                             <div class="dropdown-menu">
@@ -481,7 +481,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">TO: </span>
                                                         </div>
-                                                        <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30">
+                                                        <input name="TO_account" type="number" class="form-control select-textbox" aria-label="Text input with dropdown button" maxlength="30" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -490,7 +490,7 @@ try {
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text">$</span>
                                                     </div>
-                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00" maxlength="14">
+                                                    <input type="number" name="Amount" class="form-control" placeholder="0.00" maxlength="14" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -543,7 +543,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">TO: </span>
                                                         </div>
-                                                        <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="TO_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                         <div class="input-group-append">
                                                             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
                                                             <div class="dropdown-menu">
@@ -563,7 +563,7 @@ try {
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text">$</span>
                                                     </div>
-                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00" required>
                                                 </div>
                                             </div>
                                             <hr />
@@ -574,7 +574,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">Card number: </span>
                                                         </div>
-                                                        <input name="Card_Number" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="Card_Number" type="number" maxlength="19" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -584,7 +584,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">CVV: </span>
                                                         </div>
-                                                        <input name="Card_CVV" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="Card_CVV" type="number" maxlength="3" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-2 col-md-3 col-sm-6">
@@ -592,9 +592,9 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">Expiry: </span>
                                                         </div>
-                                                        <input name="Card_Expiry_Month" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="Card_Expiry_Month" placeholder="MM" type="number" maxlength="2" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                         <div class="form-control m-0">/</div>
-                                                        <input name="Card_Expiry_Year" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="Card_Expiry_Year" placeholder="YY" type="number" maxlength="2" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -648,7 +648,7 @@ try {
                                                         <div class="input-group-prepend">
                                                             <span class="input-group-text">FROM: </span>
                                                         </div>
-                                                        <input name="FROM_account" type="text" class="form-control select-textbox" aria-label="Text input with dropdown button">
+                                                        <input name="FROM_account" type="number" maxlength="30" class="form-control select-textbox" aria-label="Text input with dropdown button" required>
                                                         <div class="input-group-append">
                                                             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select</button>
                                                             <div class="dropdown-menu">
@@ -668,7 +668,7 @@ try {
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text">$</span>
                                                     </div>
-                                                    <input type="text" name="Amount" class="form-control" placeholder="0.00">
+                                                    <input type="number" name="Amount" class="form-control" placeholder="0.00" required>
                                                 </div>
                                             </div>
                                         </div>

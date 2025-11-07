@@ -16,10 +16,10 @@ class TransactionController
         tc."DisplayName"                                    AS to_customer,
         ta."AccountType"                                    AS to_account_type
       FROM public."Transaction" t
-      JOIN public."Account"  fa ON fa."AccountID"  = t."FromAccount"
-      JOIN public."Customer" fc ON fc."CustomerID" = fa."CustomerID"
-      JOIN public."Account"  ta ON ta."AccountID"  = t."ToAccount"
-      JOIN public."Customer" tc ON tc."CustomerID" = ta."CustomerID"
+      LEFT JOIN public."Account"  fa ON fa."AccountID"  = t."FromAccount"
+      LEFT JOIN public."Customer" fc ON fc."CustomerID" = fa."CustomerID"
+      LEFT JOIN public."Account"  ta ON ta."AccountID"  = t."ToAccount"
+      LEFT JOIN public."Customer" tc ON tc."CustomerID" = ta."CustomerID"
     SQL;
 
     $params = [];
