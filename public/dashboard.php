@@ -1,5 +1,6 @@
 <?php 
 require("../controllers/security/session_bootstrap.php");
+require_once('../controllers/security/csrf.php');
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
 // error_log(json_encode($_SESSION));

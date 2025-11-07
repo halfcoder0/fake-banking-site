@@ -1,7 +1,13 @@
 <?php
 require("../controllers/security/session_bootstrap.php");
-require('../controllers/customer_account.php');
+require_once('../controllers/security/csrf.php');
+// require('../controllers/customer_account.php');
+require('../controllers/AccountController.php');
 require_once(__DIR__ . '/../includes/dbconnection.php');
+
+$nonce = generate_random();
+add_csp_header($nonce);
+
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
 
@@ -13,14 +19,12 @@ if ($userid === '' || $role === '') {
 }
 
 // Create account when customer submit account type to be created
-if (isset($_POST['submit']) && isset($_POST['account'])) {
-  create_account($_POST);
+if (isset($_POST['submit']) && isset($_POST['account']) && csrf_verify()) {
+  $Account_Controller = new AccountController();
+  $Account_Controller -> create_account();
 }
 
-// Delete account when customer choose to delete one
-if (isset($_POST['delete'])) {
-  delete_account($_POST);
-}
+
 
 ?>
 
@@ -36,8 +40,7 @@ if (isset($_POST['delete'])) {
 
 <body>
   <div class="wrapper">
-    <h2>Customer Account Creation <?php  //echo htmlspecialchars($role . '-' . $userid); ?>
-                    
+    <h2>Customer Account Creation
 </h2>
       <table border="1">
         <tr>
@@ -46,7 +49,11 @@ if (isset($_POST['delete'])) {
           <th>Balance</th>
         </tr>
         <?php
-        list_account($userid); // List customer accounts in a table
+        // List customer accounts in a table
+        $Account_Controller = new AccountController();
+        $Account_Controller -> list_account($userid);
+        
+        // list_account($userid); 
         ?>
 
       </table>
@@ -55,8 +62,10 @@ if (isset($_POST['delete'])) {
 
         <!-- Form submission for new account creation -->
         <form method="POST" action="">
+          <?= csrf_input() ?>
           <label>Choose account type:</label>
           <select id="account" name="account">
+            <option name="account">aaaa</option>
             <option name="account">Checking</option>
             <option name="account">Savings</option>
             <option name="account">Investment</option>

@@ -1,7 +1,13 @@
 <?php
 require("../controllers/security/session_bootstrap.php");
-require('../controllers/customer_account.php');
+require_once('../controllers/security/csrf.php');
+// require('../controllers/customer_account.php');
+require('../controllers/AccountController.php');
 require_once(__DIR__ . '/../includes/dbconnection.php');
+
+$nonce = generate_random();
+add_csp_header($nonce);
+
 $userid = $_SESSION['UserID'] ?? '';
 $role = $_SESSION['Role'] ?? '';
 
@@ -12,14 +18,11 @@ if ($userid === '' || $role === '') {
   exit;
 }
 
-// Create account when customer submit account type to be created
-if (isset($_POST['submit']) && isset($_POST['account'])) {
-  create_account($_POST);
-}
 
 // Delete account when customer choose to delete one
-if (isset($_POST['delete'])) {
-  delete_account($_POST);
+if (isset($_POST['delete']) && csrf_verify()) {
+  $Account_Controller = new AccountController();
+  $Account_Controller -> delete_account();
 }
 
 ?>
@@ -47,7 +50,10 @@ if (isset($_POST['delete'])) {
           <th></th>
         </tr>
         <?php
-        list_account_to_delete($userid); // List customer accounts in a table
+        // List customer accounts to delete in a table
+        $Account_Controller = new AccountController();
+        $Account_Controller -> list_account_to_delete($userid);
+        // list_account_to_delete($userid); // List customer accounts in a table
         ?>
       </table>
 

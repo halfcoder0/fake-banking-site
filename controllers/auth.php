@@ -2,6 +2,8 @@
 require_once(__DIR__ . '/../includes/dbconnection.php');
 require_once('helpers.php');
 
+
+
 /**
  * Attempt to authenticate user
  */
