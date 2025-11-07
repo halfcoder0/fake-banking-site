@@ -1,5 +1,4 @@
 <?php
-require("../controllers/security/session_bootstrap.php");
 require_once('../controllers/security/csrf.php');
 // require('../controllers/customer_account.php');
 require('../controllers/AccountController.php');
@@ -22,7 +21,7 @@ if ($userid === '' || $role === '') {
 // Delete account when customer choose to delete one
 if (isset($_POST['delete']) && csrf_verify()) {
   $Account_Controller = new AccountController();
-  $Account_Controller -> delete_account();
+  $Account_Controller->delete_account();
 }
 
 ?>
@@ -39,27 +38,27 @@ if (isset($_POST['delete']) && csrf_verify()) {
 
 <body>
   <div class="wrapper">
-    <h2>Customer Account Deletion 
-                    
-</h2>
-      <table border="1">
-        <tr>
-          <th>Account ID</th>
-          <th>Account Type</th>
-          <th>Balance</th>
-          <th></th>
-        </tr>
-        <?php
-        // List customer accounts to delete in a table
-        $Account_Controller = new AccountController();
-        $Account_Controller -> list_account_to_delete($userid);
-        // list_account_to_delete($userid); // List customer accounts in a table
-        ?>
-      </table>
+    <h2>Customer Account Deletion
 
-        <a href="/dashboard">Back to Dashboard</a>
-        <a href="/logout">Logout</a>
-    
+    </h2>
+    <table border="1">
+      <tr>
+        <th>Account ID</th>
+        <th>Account Type</th>
+        <th>Balance</th>
+        <th></th>
+      </tr>
+      <?php
+      // List customer accounts to delete in a table
+      $Account_Controller = new AccountController();
+      $Account_Controller->list_account_to_delete($userid);
+      // list_account_to_delete($userid); // List customer accounts in a table
+      ?>
+    </table>
+
+    <a href="/dashboard">Back to Dashboard</a>
+    <a href="/logout">Logout</a>
+
   </div>
 </body>
 

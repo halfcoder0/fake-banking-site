@@ -1,6 +1,4 @@
 <?php
-require("../controllers/security/session_bootstrap.php");
-require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');
 
@@ -8,7 +6,19 @@ $nonce = generate_random();
 add_csp_header($nonce);
 
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['login']) && isset($_POST['csrf_token'])) {
-    attempt_auth($_POST);
+    try {
+        $auth_controller = new AuthController();
+        $auth_controller->attempt_auth($_POST);
+    } catch (Exception $exception) {
+        $_SESSION["error"] = "Error logging in.";
+        error_log($exception->getMessage());
+        header("Location: /login");
+    } catch (Throwable $thowable) {
+        $_SESSION["error"] = "Error logging in.";
+        error_log($thowable->getMessage());
+        header("Location: /login");
+    }
+
     exit;
 }
 
@@ -71,20 +81,22 @@ if (isset($_SESSION['UserID'])) {
                     <?php endif; ?>
                     <div class="row">
                         <div class="col-12">
-                            <form class="form-horizontal m-t-20" id="loginform" method="POST" action="/login">
+                            <form class="form-horizontal m-t-20 needs-validation" id="loginform" method="POST" action="/login">
                                 <?= csrf_input() ?>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
                                     </div>
-                                    <input name="username" type="text" class="form-control form-control-lg" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" required>
+                                    <input name="username" type="text" maxlength="50" class="form-control form-control-lg" placeholder="Username" aria-label="Username" required>
                                 </div>
-                                <div class="input-group mb-3">
+                                <div class="input-group has-validation mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2"><i class="ti-pencil"></i></span>
                                     </div>
-                                    <input name="password" type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" required>
+                                    <input name="password" type="password" maxlength="254" class="form-control form-control-lg" placeholder="Password" aria-label="Password" required>
                                 </div>
+                               
+                                
                                 <!-- TO BE IMPLEMENTED <div class="form-group row">
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">
