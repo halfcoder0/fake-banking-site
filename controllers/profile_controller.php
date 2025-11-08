@@ -106,8 +106,8 @@ class ProfileController
         if ($d['username'] === '' || strlen($d['username']) < 3)
             return "Username must be at least 3 characters.";
 
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $d['username']))
-            return "Username must be alphanumeric with optional underscore.";
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $d['username']))
+            return "Username must be alphanumeric.";
 
         // Check for required values
         if ($d['firstName'] === '') return "First name is required.";
