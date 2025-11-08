@@ -29,7 +29,7 @@ switch ($request) {
         require __DIR__ . '/login.php';
         break;
     case '/dashboard':
-        require __DIR__ . '/create_customer_account.php';
+        require __DIR__ . '/dashboard.php';
         break;
     case '/logout':
         require __DIR__ . '/logout.php';
@@ -57,6 +57,15 @@ switch ($request) {
         break;
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
+        break;
+    case '/transactions':
+        require __DIR__ . $controllers . '/api/transactions.php';
+        break;
+    case '/accounts':
+        require __DIR__ . $controllers . '/api/accounts.php';
+        break;
+    case '/create_delete_user_account':
+        require __DIR__ . '/create_delete_user_account.php';
         break;
     default:
         http_response_code(404);
