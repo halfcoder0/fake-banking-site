@@ -55,6 +55,9 @@ switch ($request) {
     case '/accounts':
         require __DIR__ . $controllers . '/api/accounts.php';
         break;
+    case '/profile':
+        require __DIR__ . '/profile.php';
+        break;
     default:
         http_response_code(404);
         require __DIR__ . '/404.php';
