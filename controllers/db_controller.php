@@ -54,11 +54,10 @@ class DBController
 
         $stmt = DBController::$pdo->prepare($query);
         $num_params = count($params);
-        error_log("num para: $num_params");
 
         if ($num_params > 0) 
             for ($row = 0; $row < $num_params; $row++){
-                $stmt->bindParam($params[$row][0], $params[$row][1], $params[$row][2]);
+                $stmt->bindValue($params[$row][0], $params[$row][1], $params[$row][2]);
             }
             
         $stmt->execute();

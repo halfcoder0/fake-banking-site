@@ -1,7 +1,7 @@
 <?php
 include('../controllers/admin_controller.php');
-require_once('../controllers/security/csrf.php');
-require_once('../controllers/auth.php');
+//error_log(json_encode($_SESSION));
+?>
 
 $nonce = generate_random();
 add_csp_header($nonce);

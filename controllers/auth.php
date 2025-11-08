@@ -1,7 +1,4 @@
 <?php
-require_once('helpers.php');
-require_once('enum.php');
-
 class AuthController
 {
     const MAX_USERNAME_LEN = 50;
