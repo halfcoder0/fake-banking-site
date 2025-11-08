@@ -1,9 +1,7 @@
-<?php $name='test';
+<?php
 include('../controllers/admin_controller.php');
-$controller = new admin_controller();
-$stats = $controller->getUserStats();
-//error_log(json_encode($_SESSION));
-?>
+require_once('../controllers/security/csrf.php');
+require_once('../controllers/auth.php');
 
 $nonce = generate_random();
 add_csp_header($nonce);
@@ -27,6 +25,33 @@ try {
 <?php
 include('../includes/admin_header.php');
 ?>
+
+<style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+.username-clickable {
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+  color: white; /* or any color you like */
+  transition: color 0.2s ease;
+}
+
+.username-clickable:hover {
+  color: #66ccff;
+}
+
+.expandable-row {
+  display: none; /* hidden on page load */
+  background-color: #1e1e1e; /* optional for contrast */
+  color: #ddd;
+}
+</style>
+
+<style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+.user-details-row {
+  display: none ; /* Force hidden on page load */
+  background-color: #2c2c2c;
+}
+</style>
 
 <body>
     <?php
@@ -112,7 +137,7 @@ include('../includes/admin_header.php');
                                                             <tbody>
                                                                 <?php foreach ($search_results as $user): ?>
                                                                     <tr class="user-row">
-                                                                        <td class="username-clickable" style="cursor:pointer; font-weight:bold; text-decoration:underline; color:white;" data-userid="<?= $user['Username'] ?>">
+                                                                        <td class="username-clickable" style="cursor:pointer; font-weight:bold; text-decoration:underline; color:#00bfff;" data-userid="<?= $user['Username'] ?>">
                                                                             <?= htmlspecialchars($user['Username']) ?>
                                                                         </td>
                                                                         <td><?= htmlspecialchars($user['Role']) ?></td>
