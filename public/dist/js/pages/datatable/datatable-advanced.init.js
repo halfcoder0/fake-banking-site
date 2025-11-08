@@ -36,169 +36,102 @@ $('a.toggle-vis').on('click', function(e) {
 });
 
 //=============================================//
-//    Column rendering                         //
+//    Column Rendering for Transactions Table  //
 //=============================================//
-$('#col_render').DataTable({
-    "columnDefs": [{
-            // The `data` parameter refers to the data for the cell (defined by the
-            // `data` option, which defaults to the column being worked with, in
-            // this case `data: 0`.
-            "render": function(data, type, row) {
-                return data + ' (' + row[3] + ')';
-            },
-            "targets": 0
-        },
-        { "visible": false, "targets": [3] }
-    ]
-});
+$(window).on('load', function () {
+  const $t = $('#col_render');
+  if (!$t.length) return;
 
-//=============================================//
-//     Row grouping                            //
-//=============================================//
-var table = $('#row_group').DataTable({
-    "pageLength": 10,
-    "columnDefs": [
-        { "visible": false, "targets": 2 }
-    ],
-    "order": [
-        [2, 'asc']
-    ],
-    "displayLength": 25,
-    "drawCallback": function(settings) {
-        var api = this.api();
-        var rows = api.rows({ page: 'current' }).nodes();
-        var last = null;
+  // Destroy existing DataTable instance (prevent reinit)
+  if ($.fn.DataTable.isDataTable($t)) {
+    $t.DataTable().clear().destroy();
+  }
 
-        api.column(2, { page: 'current' }).data().each(function(group, i) {
-            if (last !== group) {
-                $(rows).eq(i).before(
-                    '<tr class="group"><td colspan="5">' + group + '</td></tr>'
-                );
-
-                last = group;
-            }
-        });
-    }
-});
-
-//=============================================//
-// Order by the grouping
-//=============================================//
-$('#row_group tbody').on('click', 'tr.group', function() {
-    var currentOrder = table.order()[0];
-    if (currentOrder[0] === 2 && currentOrder[1] === 'asc') {
-        table.order([2, 'desc']).draw();
-    } else {
-        table.order([2, 'asc']).draw();
-    }
-});
-
-//=============================================//
-//    Multiple table control element           //
-//=============================================//
-$('#multi_control').DataTable({
-    "dom": '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>'
-});
-
-//=============================================//
-//    DOM/jquery events                        //
-//=============================================//
-var table = $('#dom_jq_event').DataTable();
-
-$('#dom_jq_event tbody').on('click', 'tr', function() {
-    var data = table.row(this).data();
-    alert('You clicked on ' + data[0] + '\'s row');
-});
-
-//=============================================//
-//    Language File                            //
-//=============================================//
-$('#lang_file').DataTable({
-    "language": {
-        "url": "dist/js/pages/datatable/German.json"
-    }
-});
-
-//=============================================//
-//    Complex headers with column visibility   //
-//=============================================//
-
-$('#complex_head_col').DataTable({
-    "columnDefs": [{
-        "visible": false,
-        "targets": -1
-    }]
-});
-
-//=============================================//
-//    Setting defaults                         //
-//=============================================//
-var defaults = {
-    "searching": false,
-    "ordering": false
-};
-
-$('#setting_defaults').dataTable($.extend(true, {}, defaults, {}));
-
-
-
-//=============================================//
-//    Footer callback                          //
-//=============================================//
-$('#footer_callback').DataTable({
-    "footerCallback": function(row, data, start, end, display) {
-        var api = this.api(),
-            data;
-
-        // Remove the formatting to get integer data for summation
-        var intVal = function(i) {
-            return typeof i === 'string' ?
-                i.replace(/[\$,]/g, '') * 1 :
-                typeof i === 'number' ?
-                i : 0;
-        };
-
-        // Total over all pages
-        total = api
-            .column(4)
-            .data()
-            .reduce(function(a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-        // Total over this page
-        pageTotal = api
-            .column(4, { page: 'current' })
-            .data()
-            .reduce(function(a, b) {
-                return intVal(a) + intVal(b);
-            }, 0);
-
-        // Update footer
-        $(api.column(4).footer()).html(
-            '$' + pageTotal + ' ( $' + total + ' total)'
-        );
-    }
-});
-
-//=============================================//
-//    Custom toolbar elements                  //
-//=============================================//
-
-$('#custom_tool_ele').DataTable({
-    "dom": '<"toolbar">frtip'
-});
-
-$("div.toolbar").html('<b>Custom tool bar! Text/images etc.</b>');
-
-
-//=============================================//
-//    Row created callback                     //
-//=============================================//
-$('#row_create_call').DataTable({
-    "createdRow": function(row, data, index) {
-        if (data[5].replace(/[\$,]/g, '') * 1 > 150000) {
-            $('td', row).eq(5).addClass('highlight');
+  $t.DataTable({
+    processing: true,
+    ajax: {
+      url: '/transactions',    
+      type: 'POST',
+      dataSrc: '',
+     
+    },
+    columns: [
+      { data: 'transaction_date', title: 'Date' },
+      { data: 'reference_number', title: 'Reference Number' },
+      { data: 'from_customer', title: 'From (Customer)' },
+      { data: 'from_account_type', title: 'From (Account Type)' },
+      { data: 'to_customer', title: 'To (Customer)' },
+      { data: 'to_account_type', title: 'To (Account Type)' },
+      {
+        data: 'amount',
+        title: 'Amount (SGD)',
+        render: function (data, type) {
+          if (type !== 'display' && type !== 'filter') return data;
+          const value = Number(String(data).replace(/[^0-9.-]/g, ''));
+          return new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD' }).format(value);
         }
+      }
+    ],
+    order: [[0, 'desc']],
+    lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, 'All']],
+    pageLength: 5,
+    responsive: true,
+    dom: 'lfrtip',
+    language: {
+      emptyTable: 'No transactions available.',
+      lengthMenu: 'Show _MENU_ entries',
+      search: 'Filter:',
+      zeroRecords: 'No matching records found.'
     }
+  });
+});
+
+//=============================================//
+//    Column Rendering for Account Balances     //
+//=============================================//
+$(window).on('load', function () {
+  const $b = $('#balances_table');
+  if (!$b.length) return;
+
+  // Destroy existing instance
+  if ($.fn.DataTable.isDataTable($b)) {
+    $b.DataTable().clear().destroy();
+  }
+
+  $b.DataTable({
+    processing: true,
+    ajax: {
+      url: '/accounts',  
+      type: 'POST',
+      dataSrc: '',
+      
+    },
+    columns: [
+      { data: 'customer_name', title: 'Customer Name' },
+      { data: 'account_id', title: 'Account ID' },
+      { data: 'account_type', title: 'Account Type' },
+      {
+        data: 'balance',
+        title: 'Balance (SGD)',
+        render: function (data, type) {
+          if (type !== 'display' && type !== 'filter') return data;
+          const numeric = Number(String(data).replace(/[^0-9.-]/g, ''));
+          return new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD' }).format(numeric);
+        }
+      }
+      , 
+     
+    ],
+    order: [[0, 'asc'], [2, 'asc'], [1, 'asc']],
+    lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, 'All']],
+    pageLength: 5,
+    dom: 'lfrtip',
+    responsive: true,
+    language: {
+      emptyTable: 'No account balances available.',
+      lengthMenu: 'Show _MENU_ entries',
+      search: 'Filter:',
+      zeroRecords: 'No matching records found.'
+    }
+  });
 });

@@ -183,3 +183,37 @@ if (!function_exists('redirect_with_error')) {
         exit;
     }
 }
+
+if (!function_exists('check_for_account_type')) {
+    /**
+     *  Only allow Checking, Investment, and Savings account types
+     */
+    function check_for_account_type($string)
+    {
+        $account_types = ["Checking", "Investment", "Savings"];
+        if (in_array($string, $account_types)) {
+            return True;
+        } else {
+            return False;
+        }
+    }
+}
+
+if (!function_exists('redirect_with_error')) {
+    /**
+     * Redirect to page (DEFAULT: /login) \
+     * after setting error msg in generic error session var \
+     * Redirection: specified redirect route > referer > login page 
+     */
+    function redirect_with_error($msg = '', $log_msg = '', $redirect = NULL, $session_var = '')
+    {   
+        if ($session_var === '') SessionVariables::GENERIC_ERROR->value;
+        if ($msg !== '') $_SESSION[$session_var] = $msg;
+        if ($log_msg !== '') error_log($log_msg);
+        
+        $target = $redirect ?? ($_SERVER['HTTP_REFERER'] ?? NULL) ?? Routes::LOGIN_PAGE->value;
+
+        header("Location: $target");
+        exit;
+    }
+}

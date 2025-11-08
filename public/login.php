@@ -22,6 +22,12 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
     exit;
 }
 
+// Check if user is logged in, if yes then go to dashbaord
+if (isset($_SESSION['UserID'])) {
+    header('Location: /dashboard');
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html>
