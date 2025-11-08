@@ -1,68 +1,50 @@
-<?php $name='test';
+<?php
+require_once('../controllers/security/csrf.php');
+require_once('../controllers/auth.php');
+require_once('../controllers/admin_controller.php');
 
-include('../controllers/admin_controller.php');
-$controller = new admin_controller();
-$stats = $controller->getUserStats();
+$nonce = generate_random();
+add_csp_header($nonce);
+$_SESSION[SessionVariables::NONCE->value] = $nonce;
+
+try {
+    $auth_controller = new AuthController();
+    $auth_controller->check_user_role([Roles::ADMIN]);
+
+    $controller = new admin_controller();
+    $stats = $controller->getUserStats();
+} catch (Exception $exception) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($exception->getMessage() . $exception->getTraceAsString());
+} catch (Throwable $throwable) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($throwable->getMessage() . $throwable->getTraceAsString());
+}
+
 ?>
 
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
+<html lang="en">
 
-<?php
-        include('../includes/admin_header.php');
-?>
+<?php include('../includes/admin_header.php'); ?>
+
 <body>
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
-    <!-- ============================================================== -->
     <div class="preloader">
         <div class="lds-ripple">
             <div class="lds-pos"></div>
             <div class="lds-pos"></div>
         </div>
     </div>
-    <!-- ============================================================== -->
-    <!-- Main wrapper - style you can find in pages.scss -->
-    <!-- ============================================================== -->
     <div id="main-wrapper">
-        <!-- ============================================================== -->
-        <!-- Topbar header - style you can find in pages.scss -->
-        <!-- ============================================================== -->
-        
-        <!-- ============================================================== -->
-        <!-- End Topbar header -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Left Sidebar - style you can find in sidebar.scss  -->
-        <!-- ============================================================== -->
-         
         <?php
         include('../includes/admin_topbar.php');
         include('../includes/admin_left_navbar.php');
         ?>
-        
-        <!-- ============================================================== -->
-        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
         <!-- ============================================================== -->
         <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-                <?php
-                include('../includes/admin_dashboard_header.php');
-                ?>
-            <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
+            <?php include('../includes/admin_dashboard_header.php'); ?>
             <!-- ============================================================== -->
             <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Sales chart -->
                 <!-- ============================================================== -->
                 <div class="card-group">
                     <div class="card">
@@ -161,11 +143,6 @@ $stats = $controller->getUserStats();
                     </div>
                 </div>
                 <!-- ============================================================== -->
-                <!-- Sales chart -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Email campaign chart -->
-                <!-- ============================================================== -->
                 <div class="row">
                     <div class="col-lg-3 col-md-6">
                         <div class="card">
@@ -238,7 +215,7 @@ $stats = $controller->getUserStats();
                         <div class="card">
                             <div class="card-body m-b-0">
                                 <h4 class="card-title">Thursday <span class="font-14 font-normal text-muted">12th April, 2018</span></h4>
-                                    <div class="d-flex align-items-center flex-row m-t-30">
+                                <div class="d-flex align-items-center flex-row m-t-30">
                                     <h1 class="font-light"><i class="wi wi-day-sleet"></i> <span>35<sup>°</sup></span></h1>
                                 </div>
                             </div>
@@ -265,67 +242,50 @@ $stats = $controller->getUserStats();
                     </div>
                 </div>
                 <!-- ============================================================== -->
-                <!-- Email campaign chart -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
             </div>
             <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
             <?php
-                include('../includes/admin_footer.php');
+            include('../includes/admin_footer.php');
             ?>
-            <!-- ============================================================== -->
-            <!-- End footer -->
             <!-- ============================================================== -->
         </div>
         <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- ============================================================== -->
-    <!-- customizer Panel -->
-    <!-- ============================================================== -->
     <?php
-        include('../includes/admin_customizer_button.php');
+    include('../includes/admin_customizer_button.php');
     ?>
     <div class="chat-windows"></div>
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-    <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="../../assets/libs/jquery/dist/jquery.min.js"  nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- apps -->
-    <script src="../../dist/js/app.min.js"></script>
-    <script src="../../dist/js/app.init.js"></script>
-    <script src="../../dist/js/app-style-switcher.js"></script>
+    <script src="../../dist/js/app.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../dist/js/app.init.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../dist/js/app-style-switcher.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="../../assets/extra-libs/sparkline/sparkline.js"></script>
+    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/extra-libs/sparkline/sparkline.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--Wave Effects -->
-    <script src="../../dist/js/waves.js"></script>
+    <script src="../../dist/js/waves.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--Menu sidebar -->
-    <script src="../../dist/js/sidebarmenu.js"></script>
+    <script src="../../dist/js/sidebarmenu.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--Custom JavaScript -->
-    <script src="../../dist/js/custom.min.js"></script>
+    <script src="../../dist/js/custom.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="../../assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="../../assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+    <script src="../../assets/libs/chartist/dist/chartist.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--c3 charts -->
-    <script src="../../assets/extra-libs/c3/d3.min.js"></script>
-    <script src="../../assets/extra-libs/c3/c3.min.js"></script>
-    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-2.0.2.min.js"></script>
-    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-world-mill-en.js"></script>
-    <script src="../../dist/js/pages/dashboards/dashboard1.js"></script>
+    <script src="../../assets/extra-libs/c3/d3.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/extra-libs/c3/c3.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-2.0.2.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-world-mill-en.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../dist/js/pages/dashboards/dashboard1.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
 </body>
 
 </html>

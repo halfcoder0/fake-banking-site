@@ -1,92 +1,145 @@
 <?php
-//require_once __DIR__ . '/../config/db.php';
-//include('../controllers/db_controller.php');
-require("security/session_bootstrap.php");
-include('../controllers/helpers.php');
-class admin_controller {
+class admin_controller
+{
+    public static function getUserStats()
+    {
+        $select_query = <<<SQL
+                SELECT count(*) FROM public."User"
+            SQL;
 
+        $result = DBController::exec_statement($select_query)->fetch();
+        filter_var_array($result, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
+        return $result;
+    }
 
-        public static function getUserStats() {
-        
-            $select_query = 
-            '
-            SELECT count(*) FROM public."User"';
+    private static function is_valid_uuid(string $uuid): bool
+    {
+        return (bool) preg_match(
+            '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/',
+            $uuid
+        );
+    }
 
-            // $params = array([':username', $username, PDO::PARAM_STR]);
-            $result = DBController::exec_statement($select_query)->fetch();
-            //error_log(json_encode($result));
-            return $result;
-        
-
+    public static function deleteStaff()
+    {
+        $userid = trim($_POST['userid']) ?? '';
+        if (!admin_controller::is_valid_uuid($userid)) {
+            $_SESSION["delete_staff_status"] = "Invalid userid. Please try again.";
+            header("Location: /update_staff");
         }
 
-        public static function deleteStaff() {
-            //DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-            $userid = $_POST['userid'] ?? '';
-            try{
-                // Delete from Staff first
-                $delete_staff_query = <<<SQL
+        try {
+            DBController::$pdo->beginTransaction();
+
+            // Delete from Staff first
+            $delete_staff_query = <<<SQL
                 DELETE FROM public."Staff"
                 WHERE "UserID" = :user_id;
                 SQL;
+            $params_staff = [
+                [":user_id", $userid, PDO::PARAM_STR]
+            ];
 
-                $params_staff = [
-                    [":user_id", $userid, PDO::PARAM_STR]
-                ];
+            $stmt = DBController::exec_statement($delete_staff_query, $params_staff);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Delete from Staff - " . $userid . " failed.");
+            }
 
-                DBController::exec_statement($delete_staff_query, $params_staff);
-
-                // Delete from User
-                $delete_user_query = <<<SQL
+            // Delete from User
+            $delete_user_query = <<<SQL
                 DELETE FROM public."User"
                 WHERE "UserID" = :user_id;
                 SQL;
+            $params_user = [
+                [":user_id", $userid, PDO::PARAM_STR]
+            ];
 
-                $params_user = [
-                    [":user_id", $userid, PDO::PARAM_STR]
-                ];
-
-                DBController::exec_statement($delete_user_query, $params_user);
-
-                $_SESSION["delete_staff_status"] = "Staff deleted successfully.";
-                header("Location: /update_staff");
-
-            }catch (Exception $e) {
-                error_log("Error: " . $e->getMessage());
-                // On error
-                $_SESSION["delete_staff_status"] = "Failed to delete staff. Please try again.";
-                header("Location: /update_staff");
-                exit;
-            }
+            $stmt = DBController::exec_statement($delete_user_query, $params_user);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Delete from User - " . $userid . " failed.");
             }
 
-        public static function updateStaff() {
-            DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-            // Retrieve and sanitize inputs
-            $userid = $_POST['userid'] ?? '';
-            $name = $_POST['username'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $confirm_password = $_POST['confirm_password'] ?? '';
-            $role = strtoupper($_POST['role'] ?? 'STAFF'); 
-            $displayName = $_POST['display_name'] ?? $name; 
-            $dob = $_POST['dob'] ?? null;
-            $contact = $_POST['contact'] ?? null;
+            DBController::$pdo->commit();
+
+            $_SESSION["delete_staff_status"] = "Staff deleted successfully.";
+            header("Location: /update_staff");
+        } catch (Exception $e) {
+            error_log("Error: " . $e->getMessage());
+            // On error
+            $_SESSION["delete_staff_status"] = "Failed to delete staff. Please try again.";
+            header("Location: /update_staff");
+            exit;
+        }
+    }
+
+    private static function throw_validation_error($msg, $session_var)
+    {
+        $_SESSION[$session_var] = $msg;
+        throw new Exception($msg);
+    }
+
+    private static function validate_staff_fields($userid, $name, $email, $password, $confirm_password, $role, $displayName, $dob, $contact, $err_session_var)
+    {
+        $username_regex = ["options" => ["regexp" => "/^[A-Za-z0-9]+$/"]];
+        $alphabet_regex = ["options" => ["regexp" => "/^[A-Za-z ]+$/"]];
+
+        if (($userid !== false && empty($userid)) || empty($name) || empty($email) || empty($role) || empty($dob) || empty($displayName) || empty($contact))
+            admin_controller::throw_validation_error("Missing required fields.", $err_session_var);
+
+        if ($userid !== false && !admin_controller::is_valid_uuid($userid))
+            admin_controller::throw_validation_error("Invalid userid.", $err_session_var);
+
+        if (filter_var($name, FILTER_VALIDATE_REGEXP, $username_regex) === false)
+            admin_controller::throw_validation_error("Username can only contain alphanumerics.", $err_session_var);
+
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            admin_controller::throw_validation_error("Invalid email.", $err_session_var);
+
+        if (!Roles::tryFrom($role))
+            admin_controller::throw_validation_error("Invalid role", $err_session_var);
+
+        if (filter_var($displayName, FILTER_VALIDATE_REGEXP, $alphabet_regex) === false)
+            admin_controller::throw_validation_error("Display name can only contain alpahbets", $err_session_var);
+
+        if ($dob !== null) {
             try {
+                $_dob = new DateTime($dob);
+            } catch (DateMalformedStringException $e) {
+                admin_controller::throw_validation_error("Invalid DOB", $err_session_var);
+            }
+        }
 
-                // Validation
-                if ( empty($userid) || empty($name) || empty($email) || empty($role) || empty($dob) || empty($displayName) || empty($contact) ){
-                    throw new Exception("Missing required fields.");
-                }
+        if ($contact !== null && filter_var($contact, FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]) === false)
+            admin_controller::throw_validation_error("Invalid contact number", $err_session_var);
 
-                if ($password !== $confirm_password) {
-                    throw new Exception("Passwords do not match.");
-                }
+        if ($password !== $confirm_password)
+            admin_controller::throw_validation_error("Passwords do not match.", $err_session_var);
+    }
 
-                if (empty($password)){
-                    // Update User
-                    $update_user_query = <<<SQL
+    public static function updateStaff()
+    {
+        // Retrieve and sanitize inputs
+        $userid = $_POST['userid'] ?? '';
+        $name = $_POST['username'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $role = strtoupper($_POST['role'] ?? 'STAFF');
+        $displayName = $_POST['display_name'] ?? $name;
+        $dob = $_POST['dob'] ?? null;
+        $contact = $_POST['contact'] ?? null;
+
+        try {
+            admin_controller::validate_staff_fields($userid, $name, $email, $password, $confirm_password, $role, $displayName, $dob, $contact, SessionVariables::UPDATE_STAFF_STATUS);
+
+            DBController::$pdo->beginTransaction();
+            DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+            if (empty($password)) {
+                // Update User
+                $update_user_query = <<<SQL
                     UPDATE public."User"
                     SET
                         "Username" = :username,
@@ -94,19 +147,17 @@ class admin_controller {
                     WHERE "UserID" = :user_id;
                     SQL;
 
-                    $params_user = [
-                        [":username", $name, PDO::PARAM_STR],
-                        [":role", $role, PDO::PARAM_STR],
-                        [":user_id", $userid, PDO::PARAM_STR]   // retrieved from Staff or search
-                    ];
+                $params_user = [
+                    [":username", $name, PDO::PARAM_STR],
+                    [":role", $role, PDO::PARAM_STR],
+                    [":user_id", $userid, PDO::PARAM_STR]   // retrieved from Staff or search
+                ];
+            } else {
+                // Hash password
+                $hashed_password = argon_hash($password);
 
-                }
-                else{
-                    // Hash password
-                    $hashed_password = password_hash($password, PASSWORD_ARGON2ID);
-                
-                    // Update User
-                    $update_user_query = <<<SQL
+                // Update User
+                $update_user_query = <<<SQL
                     UPDATE public."User"
                     SET
                         "Username" = :username,
@@ -115,17 +166,21 @@ class admin_controller {
                     WHERE "UserID" = :user_id;
                     SQL;
 
-                    $params_user = [
-                        [":username", $name, PDO::PARAM_STR],
-                        [":role", $role, PDO::PARAM_STR],
-                        [":hashed_password", $hashed_password, PDO::PARAM_STR],
-                        [":user_id", $userid, PDO::PARAM_STR]   // retrieved from Staff or search
-                    ];
-                }
+                $params_user = [
+                    [":username", $name, PDO::PARAM_STR],
+                    [":role", $role, PDO::PARAM_STR],
+                    [":hashed_password", $hashed_password, PDO::PARAM_STR],
+                    [":user_id", $userid, PDO::PARAM_STR]   // retrieved from Staff or search
+                ];
+            }
 
-                DBController::exec_statement($update_user_query, $params_user);
+            $stmt = DBController::exec_statement($update_user_query, $params_user);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Update user - " . $userid . " failed.");
+            }
 
-                $update_staff_query = <<<SQL
+            $update_staff_query = <<<SQL
                 UPDATE public."Staff"
                 SET
                     "DisplayName" = :display_name,
@@ -134,38 +189,54 @@ class admin_controller {
                     "Email" = :email
                 WHERE "UserID" = :user_id;
                 SQL;
+            $params_staff = [
+                [":display_name", $displayName, PDO::PARAM_STR],
+                [":dob", $dob ?? null, PDO::PARAM_STR],         // will insert NULL if $dob is null
+                [":contact", $contact ?? null, PDO::PARAM_INT], // will insert NULL if $contact is null
+                [":email", $email, PDO::PARAM_STR],
+                [":user_id", $userid, PDO::PARAM_STR]       // provided from search
+            ];
 
-                $params_staff = [
-                    [":display_name", $displayName, PDO::PARAM_STR],
-                    [":dob", $dob ?? null, PDO::PARAM_STR],         // will insert NULL if $dob is null
-                    [":contact", $contact ?? null, PDO::PARAM_INT], // will insert NULL if $contact is null
-                    [":email", $email, PDO::PARAM_STR],
-                    [":user_id", $userid, PDO::PARAM_STR]       // provided from search
-                ];
-
-                DBController::exec_statement($update_staff_query, $params_staff);
-                // On success
-                $_SESSION["update_staff_status"] = "Staff updated successfully!";
-                // Redirect back to create_staff
-                header("Location: /update_staff");
-                exit;
-
-            } catch (Exception $e) {
-                error_log("Error: " . $e->getMessage());
-                // On error
-                $_SESSION["update_staff_status"] = "Failed to update staff. Please try again.";
-                header("Location: /update_staff");
-                exit;
+            $stmt = DBController::exec_statement($update_staff_query, $params_staff);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Update Staff on user - " . $userid . " failed.");
             }
-        }
 
-        public static function searchStaff() {
+            DBController::$pdo->commit();
+
+            // On success
+            if (!isset($_SESSION[SessionVariables::UPDATE_STAFF_STATUS->value]))
+                $_SESSION[SessionVariables::UPDATE_STAFF_STATUS->value] = "Staff updated successfully!";
+
+            //  Call search function to update result
+            isset($_SESSION["search_name"]) ? admin_controller::searchStaff($_SESSION["search_name"]) : header("Location: /update_staff");
+        } catch (Exception $e) {
+            // On error
+            error_log("Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            if (!isset($_SESSION[SessionVariables::UPDATE_STAFF_STATUS->value]))
+                $_SESSION["update_staff_status"] = "Failed to update staff. Please try again.";
+
+            header("Location: /update_staff");
+        }
+        exit;
+    }
+
+    public static function searchStaff($search_name = '')
+    {
+        $name = $_POST['name'] ?? '';
+        if ($search_name !== '')
+            $name = $search_name;
+
+        error_log("Admin Search:" . $name);
+        $username_regex = ["options" => ["regexp" => "/^[A-Za-z0-9]+$/"]];
+
+        try {
+            if ($name !== '' && filter_var($name, FILTER_VALIDATE_REGEXP, $username_regex) === false)
+                admin_controller::throw_validation_error("Username can only contain alphanumerics.", SessionVariables::UPDATE_STAFF_STATUS->value);
+
             DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-            $name = $_POST['name'] ?? '';
-            error_log($name);
-            try {
-                //SELECT "Username", "Role", "LastLogin" FROM public."User" WHERE "Username" like :name;
-                $get_userid_query = <<<SQL
+            $get_userid_query = <<<SQL
                 SELECT 
                     u."UserID",
                     u."Username",
@@ -180,88 +251,84 @@ class admin_controller {
                 WHERE u."Username" ILIKE :name;
                 SQL;
 
-                $params_get_userid = [
-                    [":name", "%{$name}%", PDO::PARAM_STR]
-                ];
+            $params_get_userid = [
+                [":name", "%{$name}%", PDO::PARAM_STR]
+            ];
 
-                $stmt = DBController::exec_statement($get_userid_query, $params_get_userid);
-                $results = $stmt->fetchAll();
-                error_log(json_encode($results));
+            $stmt = DBController::exec_statement($get_userid_query, $params_get_userid);
+            $results = $stmt->fetchAll();
+            error_log(json_encode($results));
 
-                $_SESSION["search_results"] = $results;
-                // Redirect back to create_staff
-                header("Location: /update_staff");
-                exit;
-
-            } catch (Exception $e) {
-                error_log("Error: " . $e->getMessage());
-                // On error
-                header("Location: /create_staff?status=error");
-                exit;
-            }
+            $_SESSION["search_name"] = $name;
+            $_SESSION["search_results"] = $results;
+            // Redirect back to create_staff
+            header("Location: /update_staff");
+            exit;
+        } catch (Exception $e) {
+            error_log("Error: " . $e->getMessage());
+            // On error
+            header("Location: /update_staff");
+            exit;
         }
+    }
 
-       public static function createStaff() {
-            DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-            // Retrieve and sanitize inputs
-            $name = $_POST['name'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $confirm_password = $_POST['confirm_password'] ?? '';
-            $role = strtoupper($_POST['role'] ?? 'STAFF'); 
-            $displayName = $_POST['display_name'] ?? $name; 
-            $dob = $_POST['dob'] ?? null;
-            $contact = $_POST['contact'] ?? null;
-            $now = new DateTime();
-            $curr_date = $now->format('Y-m-d H:i:s');
+    public static function createStaff()
+    {
+        DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+        // Retrieve and sanitize inputs
+        $name = $_POST['name'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $role = strtoupper($_POST['role'] ?? 'STAFF');
+        $displayName = $_POST['display_name'] ?? $name;
+        $dob = $_POST['dob'] ?? null;
+        $contact = $_POST['contact'] ?? null;
+        $now = new DateTime();
+        $curr_date = $now->format('Y-m-d H:i:s');
 
-            try {
+        try {
+            admin_controller::validate_staff_fields(false, $name, $email, $password, $confirm_password, $role, $displayName, $dob, $contact, SessionVariables::CREATE_STAFF_STATUS->value);
 
-                // Validation
-                if (empty($name) || empty($email) || empty($password) || empty($role)) {
-                    throw new Exception("Missing required fields.");
-                }
+            // Hash password
+            $hashed_password = argon_hash($password);
 
-                if ($password !== $confirm_password) {
-                    throw new Exception("Passwords do not match.");
-                }
-
-                // Hash password
-                $hashed_password = password_hash($password, PASSWORD_ARGON2ID);
-                // Insert User
-                $insert_user_query = <<<SQL
+            DBController::$pdo->beginTransaction();
+            // Insert User
+            $insert_user_query = <<<SQL
                 INSERT INTO public."User"(
                     "UserID", "Username", "Password", "Role", "LastLogin")
                 VALUES (
                     gen_random_uuid(), :name, :hashed_password, :role, NOW()
                 );
                 SQL;
+            $params_user = [
+                [":name", $name, PDO::PARAM_STR],
+                [":hashed_password", $hashed_password, PDO::PARAM_STR],
+                [":role", $role, PDO::PARAM_STR]
+            ];
 
-                $params_user = [
-                    [":name", $name, PDO::PARAM_STR],
-                    [":hashed_password", $hashed_password, PDO::PARAM_STR],
-                    [":role", $role, PDO::PARAM_STR]
-                ];
+            $stmt = DBController::exec_statement($insert_user_query, $params_user);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Insert into user failed.");
+            }
 
-
-                DBController::exec_statement($insert_user_query, $params_user);
-
-                $get_userid_query = <<<SQL
+            $get_userid_query = <<<SQL
                 SELECT "UserID" FROM public."User" WHERE "Username" = :name;
                 SQL;
+            $params_get_userid = [
+                [":name", $name, PDO::PARAM_STR]
+            ];
 
-                $params_get_userid = [
-                    [":name", $name, PDO::PARAM_STR]
-                ];
+            $stmt = DBController::exec_statement($get_userid_query, $params_get_userid);
+            $new_user_id = $stmt->fetchColumn();
+            if (!$new_user_id) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Failed to retrieve UserID for the new user.");
+            }
 
-                $stmt = DBController::exec_statement($get_userid_query, $params_get_userid);
-                $new_user_id = $stmt->fetchColumn();
-
-                if (!$new_user_id) {
-                    throw new Exception("Failed to retrieve UserID for the new user.");
-                }
-
-                $insert_staff_query = <<<SQL
+            $insert_staff_query = <<<SQL
                 INSERT INTO public."Staff"(
                     "StaffID", "UserID", "DisplayName", "DOB", "Contact", "Email")
                 VALUES (
@@ -269,49 +336,57 @@ class admin_controller {
                 );
                 SQL;
 
-                // Bind parameters
-                $params_staff = [
-                    [":user_id", $new_user_id, PDO::PARAM_STR],
-                    [":display_name", $displayName, PDO::PARAM_STR],
-                    [":dob", $dob ?? null, PDO::PARAM_STR],       // will insert NULL if $dob is null
-                    [":contact", $contact ?? null, PDO::PARAM_INT], // will insert NULL if $contact is null
-                    [":email", $email, PDO::PARAM_STR]
-                ];
-                // Execute
-                DBController::exec_statement($insert_staff_query, $params_staff);
-
-                // On success
-                $_SESSION["create_staff_status"] = "Staff created successfully!";
-                // Redirect back to create_staff
-                header("Location: /create_staff");
-                exit;
-
-            } catch (Exception $e) {
-                error_log("Error: " . $e->getMessage());
-                // On error
-                $_SESSION["create_staff_status"] = "Failed to create staff. Please try again.";
-                header("Location: /create_staff");
-                exit;
+            // Bind parameters
+            $params_staff = [
+                [":user_id", $new_user_id, PDO::PARAM_STR],
+                [":display_name", $displayName, PDO::PARAM_STR],
+                [":dob", $dob ?? null, PDO::PARAM_STR],       // will insert NULL if $dob is null
+                [":contact", $contact ?? null, PDO::PARAM_INT], // will insert NULL if $contact is null
+                [":email", $email, PDO::PARAM_STR]
+            ];
+            // Execute
+            $stmt = DBController::exec_statement($insert_staff_query, $params_staff);
+            if ($stmt->rowCount() !== 1) {
+                DBController::$pdo->rollBack();
+                throw new Exception("Insert into STAFF failed.");
             }
-        }
 
-            
+            DBController::$pdo->commit();
+
+            // On success
+            $_SESSION[SessionVariables::CREATE_STAFF_STATUS->value] = "Staff created successfully!";
+        } catch (Exception $e) {
+            error_log("Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            if (!isset($_SESSION[SessionVariables::CREATE_STAFF_STATUS->value]))
+                $_SESSION[SessionVariables::CREATE_STAFF_STATUS->value] = "Failed to create staff. Please try again.";
+        }
+        header("Location: /create_staff");
+        exit;
+    }
 }
 
-        // --- Handle POST requests from the form ---
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $action = $_POST['action'] ?? '';
+// --- Handle POST requests from the form ---
+if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+    http_response_code(404);
 
-            if ($action === 'create_staff') {
-                admin_controller::createStaff();
-            }
-            if ($action === 'search_staff') {
-                admin_controller::searchStaff();
-            }
-            if ($action === 'update_staff') {
-                admin_controller::updateStaff();
-            }
-            if ($action === 'delete_staff') {
-                admin_controller::deleteStaff();
-            }
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    switch ($action) {
+        case 'create_staff':
+            admin_controller::createStaff();
+            break;
+        case 'search_staff':
+            admin_controller::searchStaff();
+            break;
+        case 'update_staff':
+            admin_controller::updateStaff();
+            break;
+        case 'delete_staff':
+            admin_controller::deleteStaff();
+            break;
+        default:
+            http_response_code(404);
+    }
+}

@@ -1,73 +1,61 @@
-<?php $name='test';
+<?php
 include('../controllers/admin_controller.php');
-$controller = new admin_controller();
-$stats = $controller->getUserStats();
-//error_log(json_encode($_SESSION));
-?>
+require_once('../controllers/security/csrf.php');
+require_once('../controllers/auth.php');
 
+$nonce = generate_random();
+add_csp_header($nonce);
+$_SESSION[SessionVariables::NONCE->value] = $nonce;
+
+try {
+    $auth_controller = new AuthController();
+    $auth_controller->check_user_role([Roles::ADMIN]);
+} catch (Exception $exception) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($exception->getMessage() . $exception->getTraceAsString());
+} catch (Throwable $throwable) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($throwable->getMessage() . $throwable->getTraceAsString());
+}
+
+?>
 
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
-
+<html lang="en">
 <?php
-        include('../includes/admin_header.php');
+include('../includes/admin_header.php');
 ?>
 
-
 <body>
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
-    <!-- ============================================================== -->
     <div class="preloader">
         <div class="lds-ripple">
             <div class="lds-pos"></div>
             <div class="lds-pos"></div>
         </div>
     </div>
-    <!-- ============================================================== -->
-    <!-- Main wrapper - style you can find in pages.scss -->
-    <!-- ============================================================== -->
     <div id="main-wrapper">
-        <!-- ============================================================== -->
-        <!-- Topbar header - style you can find in pages.scss -->
-        <!-- ============================================================== -->
         <?php
         include('../includes/admin_topbar.php');
         include('../includes/admin_left_navbar.php');
         ?>
         <!-- ============================================================== -->
-        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
         <div class="page-wrapper">
-            <!-- ============================================================== -->
             <!-- Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
             <?php
-                include('../includes/admin_dashboard_header.php');
+            include('../includes/admin_dashboard_header.php');
             ?>
             <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
             <div class="container-fluid">
-               <!-- ============================================================== -->
                 <!-- Create Staff Form -->
-                <!-- ============================================================== -->
                 <div class="row justify-content-center">
                     <div class="col-lg-6 col-md-8 col-sm-12">
                         <div class="card">
                             <div class="card-body">
                                 <h3 class="card-title text-center m-b-30">Create Staff Account</h3>
-
                                 <form class="form-horizontal m-t-20" action="/admin_controller" method="POST">
                                     <!-- Hidden action -->
                                     <input type="hidden" name="action" value="create_staff">
-
+                                    <?= csrf_input() ?>
                                     <!-- Username -->
                                     <div class="form-group row">
                                         <div class="col-12">
@@ -143,81 +131,51 @@ $stats = $controller->getUserStats();
                                         </div>
                                     </div>
                                 </form>
-
-
-                                
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
                 <!-- End Create Staff Form -->
-                <!-- ============================================================== -->
             </div>
-            <!-- ============================================================== -->
             <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
             <?php
-                include('../includes/admin_footer.php');
+            include('../includes/admin_footer.php');
             ?>
             <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
         </div>
-        <!-- ============================================================== -->
         <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- ============================================================== -->
-    <!-- customizer Panel -->
-    <!-- ============================================================== -->
     <?php
-        include('../includes/admin_customizer_button.php');
+    include('../includes/admin_customizer_button.php');
     ?>
     <div class="chat-windows"></div>
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-    <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+    <script src="../../assets/libs/jquery/dist/jquery.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- apps -->
-    <script src="../../dist/js/app.min.js"></script>
-    <script src="../../dist/js/app.init.js"></script>
-    <script src="../../dist/js/app-style-switcher.js"></script>
+    <script src="../../dist/js/app.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../dist/js/app.init.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../dist/js/app-style-switcher.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="../../assets/extra-libs/sparkline/sparkline.js"></script>
-    <!--Wave Effects -->
-    <script src="../../dist/js/waves.js"></script>
+    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
+    <script src="../../assets/extra-libs/sparkline/sparkline.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--Menu sidebar -->
-    <script src="../../dist/js/sidebarmenu.js"></script>
+    <script src="../../dist/js/sidebarmenu.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
     <!--Custom JavaScript -->
-    <script src="../../dist/js/custom.min.js"></script>
-    <!--This page JavaScript -->
-    <!--chartis chart-->
-    <script src="../../assets/libs/chartist/dist/chartist.min.js"></script>
-    <script src="../../assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
-    <!--c3 charts -->
-    <script src="../../assets/extra-libs/c3/d3.min.js"></script>
-    <script src="../../assets/extra-libs/c3/c3.min.js"></script>
-    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-2.0.2.min.js"></script>
-    <script src="../../assets/extra-libs/jvector/jquery-jvectormap-world-mill-en.js"></script>
-    <script src="../../dist/js/pages/dashboards/dashboard1.js"></script>
+    <script src="../../dist/js/custom.min.js" nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"></script>
 </body>
 <?php
 if (isset($_SESSION["create_staff_status"])): ?>
     <script>
         alert("<?= addslashes($_SESSION["create_staff_status"]) ?>");
     </script>
-    <?php unset($_SESSION["create_staff_status"]); // clear after use ?>
+    <?php unset($_SESSION["create_staff_status"]); // clear after use 
+    ?>
 <?php endif; ?>
 
 </html>
