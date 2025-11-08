@@ -1,12 +1,10 @@
 <?php
-// include('../includes/dbconnection.php');
-require_once(__DIR__ . '/../includes/dbconnection.php');
 if (isset($_POST['submit'])) {
     $fname    = $_POST['fname'];
     $contno   = $_POST['contactno'];
     $email    = $_POST['email'];
     $password = md5($_POST['password']);
-    $pdo = get_pdo();
+    $pdo = DBController::$pdo();
     // Check if email or contact already exists
     $stmt = $pdo->prepare("SELECT email FROM tblecustomer WHERE email = :email OR mobilenumber = :contno");
     $stmt->execute(['email' => $email, 'contno' => $contno]);

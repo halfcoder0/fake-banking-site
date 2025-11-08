@@ -4,7 +4,7 @@ require_once('../controllers/auth.php');
 
 try {
     $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER], "/dashboard");
+    $auth_controller->check_user_role([Roles::USER]);
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
 }

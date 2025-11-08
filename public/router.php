@@ -34,20 +34,14 @@ switch ($request) {
     case '/logout':
         require __DIR__ . '/logout.php';
         break;
-    case '/create_customer_account':
-        require __DIR__ . '/create_customer_account.php';
-        break;
-    case '/delete_customer_account':
-        require __DIR__ . '/delete_customer_account.php';
-        break;
-    case '/customer_account':
-        require __DIR__ . $controllers . 'customer_account.php';
-        break;
     case '/register':
         require __DIR__ . '/register.php';
         break;
-    case '/db':
-        require __DIR__ . '/../includes/dbconnection.php';
+    case '/create_staff':
+        require __DIR__ . '/create_staff.php';
+        break;
+    case '/update_staff':
+        require __DIR__ . '/update_staff.php';
         break;
     case '/transfer':
         require __DIR__ . '/transfer.php';
@@ -57,6 +51,9 @@ switch ($request) {
         break;
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
+        break;
+    case '/admin_controller':
+        require __DIR__ . '/../controllers/admin_controller.php';
         break;
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';

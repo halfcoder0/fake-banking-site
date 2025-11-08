@@ -6,7 +6,7 @@ require('../controllers/AccountController.php');
 try {
     $userid = $_SESSION[SessionVariables::USER_ID->value];
     $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER], "/dashboard");
+    $auth_controller->check_user_role([Roles::USER]);
     $msg = "";
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
