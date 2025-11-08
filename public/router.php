@@ -6,7 +6,7 @@ require_once __DIR__ .'/../controllers/enum.php';
 require("../controllers/security/session_bootstrap.php");
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__ . '/..'); 
+$dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $request = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
@@ -52,11 +52,16 @@ switch ($request) {
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
         break;
-    case '/admin_controller':
-        require __DIR__ . '/../controllers/admin_controller.php';
-        break;
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';
+        break;
+    case '/balances':
+        require __DIR__ . $controllers . '/api/balances.php';
+        break;
+    case '/profile':
+        require __DIR__ . '/profile.php';
+    case '/admin_controller':
+        require __DIR__ . '/../controllers/admin_controller.php';
         break;
     case '/accounts':
         require __DIR__ . $controllers . '/api/accounts.php';

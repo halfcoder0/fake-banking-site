@@ -1,15 +1,71 @@
 <?php
 require_once('../controllers/security/csrf.php');
 require_once('../controllers/auth.php');
+require_once('../controllers/profile_controller.php');
 
 $nonce = generate_random();
 add_csp_header($nonce);
 
 try {
-    $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER]);
+    // Require login and correct role (User only)
+    $auth = new AuthController();
+    $auth->check_user_role([Roles::USER], "/login");
+
+    // Load controller
+    $profile_controller = new ProfileController();
+
+    // Get user session values
+    $user_id = $_SESSION['UserID'];
+    $customer_id = $_SESSION['CustomerID'];
+
+    /* ============================================================
+     * POST REQUEST — handle form submission
+     * ============================================================ */
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'msg' => 'Invalid CSRF token.'
+            ];
+            header("Location: /profile");
+            exit;
+        }
+
+        $result = $profile_controller->updateProfile($_POST, $user_id, $customer_id);
+
+        if (!empty($result['success'])) {
+            $_SESSION['flash'] = [
+                'type' => 'success',
+                'msg' => 'Profile updated successfully!'
+            ];
+        } else {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'msg' => $result['error'] ?? "Update failed."
+            ];
+        }
+
+        // Redirect (PRG pattern)
+        header("Location: /profile");
+        exit;
+    }
+
+    /* ============================================================
+     * GET REQUEST — load profile + flash (if any)
+     * ============================================================ */
+    $profile = $profile_controller->getProfile($user_id);
+
+    // Load & clear flash message
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($e->getMessage() . $e->getTraceAsString());
+} catch (Throwable $t) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+    error_log($t->getMessage() . $t->getTraceAsString());
 }
 ?>
 
@@ -27,14 +83,13 @@ try {
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon.png">
     <title>Nexabank | User Dashboard</title>
     <!-- This page plugin CSS -->
-    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+        href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="dist/css/style.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
     <!-- ============================================================== -->
     <div class="preloader">
         <div class="lds-ripple">
@@ -656,88 +711,134 @@ try {
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-5 align-self-center">
-                        <h4 class="page-title">Dashboard</h4>
+                        <h4 class="page-title">Profile Page</h4>
                     </div>
                 </div>
             </div>
             <!-- ============================================================== -->
             <div class="container-fluid">
                 <!-- Start Page Content -->
-                <!-- Column rendering for balances -->
+                <!-- User Profile -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Account Balances</h4>
-                                <h6 class="card-subtitle"></h6>
-                                <div class="table-responsive">
-                                    <table id="balances_table" class="table table-striped table-bordered display"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Customer</th>
-                                                <th>Account ID</th>
-                                                <th>Account Type</th>
-                                                <th>Balance (SGD)</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
 
-                                </div>
+                                <h4 class="card-title">Welcome, <?= htmlspecialchars($_SESSION["DisplayName"]) ?></h4>
+                                <!-- Alerts -->
+                                <?php if (!empty($flash)): ?>
+                                    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show"
+                                        role="alert">
+                                        <?= htmlspecialchars($flash['msg'], ENT_QUOTES) ?>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+
+                                <!-- ================== -->
+                                <!-- form -->
+                                <form method="POST" action="/profile">
+                                    <?= csrf_input() ?>
+
+                                    <!-- Username -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username"
+                                            value="<?= htmlspecialchars($profile['Username']) ?>" required>
+                                    </div>
+
+                                    <!-- Display Name -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Display Name</label>
+                                        <input type="text" class="form-control" id="displayName" name="displayName"
+                                            value="<?= htmlspecialchars($profile['DisplayName']) ?>" required>
+                                    </div>
+
+                                    <!-- First Name -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" name="firstName"
+                                            value="<?= htmlspecialchars($profile['FirstName']) ?>" required>
+                                    </div>
+
+                                    <!-- Last Name -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" name="lastName"
+                                            value="<?= htmlspecialchars($profile['LastName']) ?>" required>
+                                    </div>
+
+                                    <!-- DOB -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Date of Birth</label>
+                                        <input type="date" class="form-control" id="dob" name="dob"
+                                            value="<?= htmlspecialchars($profile['DOB']) ?>" required>
+                                    </div>
+
+                                    <!-- Contact -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Contact Number</label>
+                                        <input type="text" class="form-control" id="contactNo" name="contactNo"
+                                            value="<?= htmlspecialchars($profile['ContactNo']) ?>" required>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email"
+                                            value="<?= htmlspecialchars($profile['Email']) ?>" required>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Password -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="password" name="password">
+                                        <small class="form-text text-muted">Leave blank if unchanged.</small>
+                                    </div>
+
+                                    <!-- Repeat Password -->
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Repeat Password</label>
+                                        <input type="password" class="form-control" id="repeat_pass" name="repeat_pass">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success">Save Changes</button>
+                                </form>
+
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Column rendering for transactions -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Transaction History</h4>
-                                <div class="table-responsive">
-                                    <table id="col_render" class="table table-striped table-bordered display"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Reference Number</th>
-                                                <th>From (Customer)</th>
-                                                <th>From Account Type</th>
-                                                <th>To (Customer)</th>
-                                                <th>To Account Type</th>
-                                                <th>Amount ($)</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- ============================================================== -->
             </div>
         </div>
-    </div>
-    <!-- ============================================================== -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap tether Core JavaScript -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
-    <!-- apps -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.min.js"></script>
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.init.horizontal.js"></script>
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app-style-switcher.horizontal.js"></script>
-    <!-- slimscrollbar scrollbar JavaScript -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/sparkline/sparkline.js"></script>
-    <!--Wave Effects -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/waves.js"></script>
-    <!--Custom JavaScript -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/custom.min.js"></script>
-    <!--This page plugins -->
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
-   
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
+        <!-- ============================================================== -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+        <!-- Bootstrap tether Core JavaScript -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+        <!-- apps -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.min.js"></script>
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.init.horizontal.js"></script>
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../dist/js/app-style-switcher.horizontal.js"></script>
+        <!-- slimscrollbar scrollbar JavaScript -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/extra-libs/sparkline/sparkline.js"></script>
+        <!--Wave Effects -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/waves.js"></script>
+        <!--Custom JavaScript -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/custom.min.js"></script>
+        <!--This page plugins -->
+        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
+            src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
 
 </body>
