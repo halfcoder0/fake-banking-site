@@ -1,9 +1,7 @@
-<?php $name='test';
+<?php
 include('../controllers/admin_controller.php');
-$controller = new admin_controller();
-$stats = $controller->getUserStats();
-//error_log(json_encode($_SESSION));
-?>
+require_once('../controllers/security/csrf.php');
+require_once('../controllers/auth.php');
 
 $nonce = generate_random();
 add_csp_header($nonce);
@@ -25,60 +23,35 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <?php
-        include('../includes/admin_header.php');
+include('../includes/admin_header.php');
 ?>
 
-
 <body>
-    <!-- ============================================================== -->
-    <!-- Preloader - style you can find in spinners.css -->
-    <!-- ============================================================== -->
     <div class="preloader">
         <div class="lds-ripple">
             <div class="lds-pos"></div>
             <div class="lds-pos"></div>
         </div>
     </div>
-    <!-- ============================================================== -->
-    <!-- Main wrapper - style you can find in pages.scss -->
-    <!-- ============================================================== -->
     <div id="main-wrapper">
-        <!-- ============================================================== -->
-        <!-- Topbar header - style you can find in pages.scss -->
-        <!-- ============================================================== -->
         <?php
         include('../includes/admin_topbar.php');
         include('../includes/admin_left_navbar.php');
         ?>
         <!-- ============================================================== -->
-        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <!-- ============================================================== -->
         <div class="page-wrapper">
-            <!-- ============================================================== -->
             <!-- Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
             <?php
-                include('../includes/admin_dashboard_header.php');
+            include('../includes/admin_dashboard_header.php');
             ?>
             <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
             <div class="container-fluid">
-               <!-- ============================================================== -->
                 <!-- Create Staff Form -->
-                <!-- ============================================================== -->
                 <div class="row justify-content-center">
                     <div class="col-lg-6 col-md-8 col-sm-12">
                         <div class="card">
                             <div class="card-body">
                                 <h3 class="card-title text-center m-b-30">Create Staff Account</h3>
-
                                 <form class="form-horizontal m-t-20" action="/admin_controller" method="POST">
                                     <!-- Hidden action -->
                                     <input type="hidden" name="action" value="create_staff">
@@ -158,42 +131,23 @@ try {
                                         </div>
                                     </div>
                                 </form>
-
-
-                                
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
                 <!-- End Create Staff Form -->
-                <!-- ============================================================== -->
             </div>
-            <!-- ============================================================== -->
             <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
             <?php
-                include('../includes/admin_footer.php');
+            include('../includes/admin_footer.php');
             ?>
             <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
         </div>
-        <!-- ============================================================== -->
         <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- ============================================================== -->
-    <!-- customizer Panel -->
-    <!-- ============================================================== -->
     <?php
-        include('../includes/admin_customizer_button.php');
+    include('../includes/admin_customizer_button.php');
     ?>
     <div class="chat-windows"></div>
     <!-- ============================================================== -->

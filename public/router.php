@@ -64,6 +64,9 @@ switch ($request) {
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
         break;
+    case '/admin_controller':
+        require __DIR__ . '/../controllers/admin_controller.php';
+        break;
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';
         break;
