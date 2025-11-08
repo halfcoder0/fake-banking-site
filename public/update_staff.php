@@ -302,8 +302,8 @@ include('../includes/admin_header.php');
     </script>
 </body>
 <?php
-if (isset($_SESSION["search_result"])):
-    unset($_SESSION["search_result"]); //Clear after use
+if (isset($_SESSION["search_results"])):
+    unset($_SESSION["search_results"]); //Clear after use
 endif; ?>
 
 <?php

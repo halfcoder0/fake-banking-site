@@ -171,7 +171,7 @@ include('../includes/admin_header.php');
 </body>
 <?php
 if (isset($_SESSION["create_staff_status"])): ?>
-    <script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
         alert("<?= addslashes($_SESSION["create_staff_status"]) ?>");
     </script>
     <?php unset($_SESSION["create_staff_status"]); // clear after use 

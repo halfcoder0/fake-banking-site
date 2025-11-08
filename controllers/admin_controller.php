@@ -65,14 +65,15 @@ class admin_controller
             DBController::$pdo->commit();
 
             $_SESSION["delete_staff_status"] = "Staff deleted successfully.";
-            header("Location: /update_staff");
+            //  Call search function to update result
+            isset($_SESSION["search_name"]) ? admin_controller::searchStaff($_SESSION["search_name"]) : header("Location: /update_staff");
         } catch (Exception $e) {
             error_log("Error: " . $e->getMessage());
             // On error
             $_SESSION["delete_staff_status"] = "Failed to delete staff. Please try again.";
             header("Location: /update_staff");
-            exit;
         }
+        exit;
     }
 
     private static function throw_validation_error($msg, $session_var)
