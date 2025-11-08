@@ -44,7 +44,7 @@ class AuthController
     /**
      * Redirect user to appropriate pages
      */
-    private function redirect_user(string $role)
+    public function redirect_user(string $role)
     {
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
@@ -200,12 +200,16 @@ class AuthController
      * if user is not authenticated, redirect to page DEFAULT:'/login' \
      * if user's role is allowed for the page ($allowed_roles) DEFAULT: USER
      */
-    public function check_user_role(array $allowed_roles = [Roles::USER], $redirect_url = '/login')
+    public function check_user_role(array $allowed_roles = [Roles::USER])
     {
-        if (!isset($_SESSION['Role'])) AuthController::return_error('', $redirect_url);
+        if (!isset($_SESSION['Role'])) {
+            error_log('No role found in session, likely not logged in.');
+            header('Location: /logout');
+        }
 
         $user_role = Roles::tryFrom($_SESSION['Role']);
 
-        if (!in_array($user_role, $allowed_roles)) AuthController::return_error('', $redirect_url);
+        if (!in_array($user_role, $allowed_roles))
+            redirect_404();
     }
 }

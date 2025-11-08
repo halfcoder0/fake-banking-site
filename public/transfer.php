@@ -8,7 +8,7 @@ add_csp_header($nonce);
 
 try {
     $auth_controller = new AuthController();
-    $auth_controller->check_user_role([Roles::USER], "/dashboard");
+    $auth_controller->check_user_role([Roles::USER]);
 
     $transfer_controller = new TransferController();
     $own_accounts = $transfer_controller->get_user_accounts();

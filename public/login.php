@@ -21,6 +21,13 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
 
     exit;
 }
+
+// Check if user is logged in, if yes then go to dashbaord
+if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
+    $auth_controller = new AuthController();
+    $auth_controller->redirect_user($_SESSION["Role"]);
+}
+
 ?>
 
 <!DOCTYPE html>

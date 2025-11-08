@@ -37,8 +37,11 @@ switch ($request) {
     case '/register':
         require __DIR__ . '/register.php';
         break;
-    case '/db':
-        require __DIR__ . '/../includes/dbconnection.php';
+    case '/create_staff':
+        require __DIR__ . '/create_staff.php';
+        break;
+    case '/update_staff':
+        require __DIR__ . '/update_staff.php';
         break;
     case '/transfer':
         require __DIR__ . '/transfer.php';
@@ -57,6 +60,14 @@ switch ($request) {
         break;
     case '/profile':
         require __DIR__ . '/profile.php';
+    case '/admin_controller':
+        require __DIR__ . '/../controllers/admin_controller.php';
+        break;
+    case '/accounts':
+        require __DIR__ . $controllers . '/api/accounts.php';
+        break;
+    case '/create_delete_user_account':
+        require __DIR__ . '/create_delete_user_account.php';
         break;
     default:
         http_response_code(404);

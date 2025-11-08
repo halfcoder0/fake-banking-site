@@ -21,10 +21,20 @@ enum SessionVariables: string
     case DEPOSIT_SUCCESS = 'deposit_success';
     case WITHDRAW_ERROR = 'withdraw_error';
     case WITHDRAW_SUCCESS = 'withraw_success';
+    case UPDATE_STAFF_STATUS = 'update_staff_status';
+    case CREATE_STAFF_STATUS = 'create_staff_status';
+    case NONCE = 'nonce';
 }
 
 enum Routes: string
 {
     case LOGIN_PAGE = '/login';
     case TRANSFER_PAGE = '/transfer';
+}
+
+enum AccountTypes: string
+{
+    case CHECKING = 'Checking';
+    case SAVINGS = 'Savings';
+    case INVESTMENT = 'Investment';
 }
