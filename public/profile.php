@@ -699,24 +699,24 @@ try {
                             <div class="card-body">
 
                                 <h4 class="card-title">Welcome, <?= htmlspecialchars($_SESSION["DisplayName"]) ?></h4>
-
-                                <!-- Alerts -->
-                                <?php if ($flash): ?>
-                                    <?php if (!empty($flash['success'])): ?>
-                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                            Profile updated successfully!
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                            <?= htmlspecialchars($flash['error'] ?? 'Update failed', ENT_QUOTES) ?>
-                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                    <?php endif; ?>
+                               <!-- Alerts -->
+                                <?php if (isset($_SESSION['success'])): ?>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        Profile updated successfully!
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <?php unset($_SESSION['success']); ?>
+                                <?php endif; ?>
+                                <?php if (isset($_SESSION['error'])): ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <?= htmlspecialchars($flash['error'] ?? 'Update failed', ENT_QUOTES) ?>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <?php unset($_SESSION['error']); ?>
                                 <?php endif; ?>
 
                                 <!-- ================== -->
@@ -823,18 +823,5 @@ try {
         <!--This page plugins -->
         <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
             src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
-        <!-- start - This is for export functionality only -->
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
-        <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>"
-            src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
 
 </body>
