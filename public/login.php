@@ -1,6 +1,4 @@
 <?php
-require("../controllers/security/session_bootstrap.php");
-require_once('../controllers/helpers.php');
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');
 
@@ -23,6 +21,12 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
     }
 
     exit;
+}
+
+// Check if user is logged in, if yes then go to dashbaord
+if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
+    $auth_controller = new AuthController();
+    $auth_controller->redirect_user($_SESSION["Role"]);
 }
 
 ?>

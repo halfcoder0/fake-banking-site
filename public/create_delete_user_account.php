@@ -1,12 +1,27 @@
 <?php
 require_once('../controllers/security/csrf.php');
 require_once('../controllers/auth.php');
+require('../controllers/AccountController.php');
 
 try {
+    $userid = $_SESSION[SessionVariables::USER_ID->value];
     $auth_controller = new AuthController();
     $auth_controller->check_user_role([Roles::USER]);
+    $msg = "";
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+}
+
+// Create account when customer submit account type to be created
+if (isset($_POST['submit']) && isset($_POST['account']) && csrf_verify()) {
+  $Account_Controller = new AccountController();
+  $msg = $Account_Controller -> create_account();
+}
+
+
+if (isset($_POST['delete']) && csrf_verify()) {
+  $Account_Controller = new AccountController();
+  $msg = $Account_Controller -> delete_account();
 }
 ?>
 
@@ -680,79 +695,39 @@ try {
         <!-- Page wrapper  -->
         <!-- ============================================================== -->
         <div class="page-wrapper">
-            <!-- ============================================================== -->
-            <!-- Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <div class="page-breadcrumb">
-                <div class="row">
-                    <div class="col-5 align-self-center">
-                        <h4 class="page-title">Advanced Initialisation</h4>
-                    </div>
-                    <div class="col-7 align-self-center">
-                        <div class="d-flex align-items-center justify-content-end">
-                            <nav aria-label="breadcrumb">
-                                <ol class="breadcrumb">
-                                    <li class="breadcrumb-item">
-                                        <a href="#">Home</a>
-                                    </li>
-                                    <li class="breadcrumb-item active" aria-current="page">Advanced Initialisation</li>
-                                </ol>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
+          
             <!-- ============================================================== -->
             <!-- Container fluid  -->
             <!-- ============================================================== -->
             <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Start Page Content -->
-                <!-- ============================================================== -->
-                <!-- File export -->
+                <!-- Column rendering for acc -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">File export</h4>
-                                <h6 class="card-subtitle">Exporting data from a table can often be a key part of a
-                                    complex application. The Buttons extension for DataTables provides three plug-ins
-                                    that provide overlapping functionality for data export. You can refer full
-                                    documentation from here <a href="https://datatables.net/">Datatables</a></h6>
-                                <div class="table-responsive">
-                                    <table id="file_export" class="table table-striped table-bordered display">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Position</th>
-                                                <th>Office</th>
-                                                <th>Age</th>
-                                                <th>Start date</th>
-                                                <th>Salary</th>
-                                            </tr>
-                                        </thead>
+                                <h4 class="card-title">Create / Delete Accounts</h4>
 
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Column rendering for balances -->
-                <a href="/create_delete_user_account"> <button class="dt-button buttons-print btn btn-primary mr-1" tabindex="0" aria-controls="file_export">
-                  <span>Create / Delete Accounts</span>
-                </button></a>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Account Listing</h4>
-                                <h6 class="card-subtitle">Just testing</h6>
+                                <!-- Form submission for new account creation -->
+                                <form method="POST" action="">
+                                <?= csrf_input() ?>
+                                <label>Choose account type:</label>
+                                <select name="account" aria-controls="balances_table" class="form-control form-control-sm">
+                                    <option name="account">Checking</option>
+                                    <option name="account">Savings</option>
+                                    <option name="account">Investment</option>
+                                    <input type="hidden" name="userid" value="<?php echo htmlspecialchars($userid); ?>">
+                                </select>
+                                </br>
+                                <input name="submit" type="submit" value="Create Account"> 
+                                </form>
+
+                                <!-- Print Success or Failure messages -->
+                                <?php echo htmlspecialchars($msg);  $msg = ""?>
+
+                                <br><a href="/dashboard"><input type="submit" value="Back to Dashboard"></a>
+                                <br>
                                 <div class="table-responsive">
-                                    <table id="balances_table" class="table table-striped table-bordered display"
+                                    <table id="delete_accounts_table" class="table table-striped table-bordered display"
                                         style="width:100%">
                                         <thead>
                                             <tr>
@@ -760,36 +735,13 @@ try {
                                                 <th>Account ID</th>
                                                 <th>Account Type</th>
                                                 <th>Balance (SGD)</th>
+                                                <th></th>
                                             </tr>
-                                        </thead>
-                                    </table>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Column rendering for transactions -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Transaction History</h4>
-                                <h6 class="card-subtitle">Just testing</h6>
-                                <div class="table-responsive">
-                                    <table id="col_render" class="table table-striped table-bordered display"
-                                        style="width:100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Reference Number</th>
-                                                <th>From (Customer)</th>
-                                                <th>From Account Type</th>
-                                                <th>To (Customer)</th>
-                                                <th>To Account Type</th>
-                                                <th>Amount ($)</th>
-                                            </tr>
+                                            <?php 
+                                            // List customer accounts to delete in a table
+                                            $Account_Controller = new AccountController();
+                                            $Account_Controller -> list_account_to_delete($userid);
+                                            ?>
                                         </thead>
                                     </table>
                                 </div>
@@ -797,6 +749,7 @@ try {
                         </div>
                     </div>
                 </div>
+
 
                 <!-- ============================================================== -->
                 <!-- End PAge Content -->

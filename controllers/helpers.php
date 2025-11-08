@@ -138,7 +138,94 @@ if (!function_exists('check_for_non_alphanum')) {
      */
     function check_for_non_alphanum($string)
     {
-        return preg_match("/[^[:alnum:][:space:]]/u", '', $string);
+        return preg_match("/[^[:alnum:][:space:]]/u", $string);
     }
 }
 
+if (!function_exists('valid_positive_int')) {
+    /**
+     *  Check for non-alphanumeric (Can be used for sanitization) \
+     *  Returns true if there is
+     */
+    function valid_positive_int($string)
+    {
+        return !preg_match("/[^\d]/u", $string);
+    }
+}
+
+if (!function_exists('is_valid_money')) {
+    /**
+     *  Check for non-alphanumeric (Can be used for sanitization) \
+     *  Returns true if there is
+     */
+    function is_valid_money($string)
+    {
+        $pattern = '/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/';
+        return preg_match($pattern, $string);
+    }
+}
+
+if (!function_exists('redirect_with_error')) {
+    /**
+     * Redirect to page (DEFAULT: /login) \
+     * after setting error msg in generic error session var \
+     * Redirection: specified redirect route > referer > login page 
+     */
+    function redirect_with_error($msg = '', $log_msg = '', $redirect = NULL, $session_var = '')
+    {
+        if ($session_var === '') SessionVariables::GENERIC_ERROR->value;
+        if ($msg !== '') $_SESSION[$session_var] = $msg;
+        if ($log_msg !== '') error_log($log_msg);
+
+        $target = $redirect ?? ($_SERVER['HTTP_REFERER'] ?? NULL) ?? Routes::LOGIN_PAGE->value;
+
+        header("Location: $target");
+        exit;
+    }
+}
+
+if (!function_exists('check_for_account_type')) {
+    /**
+     *  Only allow Checking, Investment, and Savings account types
+     */
+    function check_for_account_type($string)
+    {
+        $account_types = ["Checking", "Investment", "Savings"];
+        if (in_array($string, $account_types)) {
+            return True;
+        } else {
+            return False;
+        }
+    }
+}
+
+if (!function_exists('redirect_with_error')) {
+    /**
+     * Redirect to page (DEFAULT: /login) \
+     * after setting error msg in generic error session var \
+     * Redirection: specified redirect route > referer > login page 
+     */
+    function redirect_with_error($msg = '', $log_msg = '', $redirect = NULL, $session_var = '')
+    {
+        if ($session_var === '') SessionVariables::GENERIC_ERROR->value;
+        if ($msg !== '') $_SESSION[$session_var] = $msg;
+        if ($log_msg !== '') error_log($log_msg);
+
+        $target = $redirect ?? ($_SERVER['HTTP_REFERER'] ?? NULL) ?? Routes::LOGIN_PAGE->value;
+
+        header("Location: $target");
+        exit;
+    }
+}
+
+if (!function_exists('redirect_404')) {
+    /**
+     * Sends HTTP response code 404 & displays 404 page
+     */
+    function redirect_404()
+    {
+        http_response_code(404);
+        require_once '__DIR__' . '/../public/404.php';
+        exit;
+    }
+}

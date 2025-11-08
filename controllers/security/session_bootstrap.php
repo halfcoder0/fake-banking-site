@@ -115,6 +115,7 @@ function kill_session()
 
     session_start();
     init_session_meta();
+    header('Location: /');
     exit;
 }
 

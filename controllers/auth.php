@@ -1,6 +1,7 @@
 <?php
 require_once('helpers.php');
 require_once('enum.php');
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -9,96 +10,96 @@ class AuthController
     const MAX_USERNAME_LEN = 50;
     const MAX_PASSWORD_LEN = 254;
 
-/** Authentication **/
-  public function attempt_auth(array $creds)
-  {
-      if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
+    /** Authentication **/
+    public function attempt_auth(array $creds)
+    {
+        if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
 
-      $username = trim($creds['username'] ?? '');
-      $password = trim($creds['password'] ?? '');
+        $username = trim($creds['username'] ?? '');
+        $password = trim($creds['password'] ?? '');
 
-      $user_hash = AuthController::retrieve_hash($username);
-      if ($user_hash === null || !password_verify($password, $user_hash)) {
-          AuthController::return_error('Invalid username/password.');
-      }
+        $user_hash = AuthController::retrieve_hash($username);
+        if ($user_hash === null || !password_verify($password, $user_hash)) {
+            AuthController::return_error('Invalid username/password.');
+        }
 
-      $user_data = AuthController::get_user_info($username);
-      if ($user_data === false) AuthController::return_error('Error retrieving user.');
+        $user_data = AuthController::get_user_info($username);
+        if ($user_data === false) AuthController::return_error('Error retrieving user.');
 
-      //Generate OTP
-      $otp = random_int(100000, 999999);
-      $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        //Generate OTP
+        $otp = random_int(100000, 999999);
+        $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-      $insertOtp = <<<SQL
+        $insertOtp = <<<SQL
           INSERT INTO "UserOTP" ("UserID", "Code", "ExpiresAt")
           VALUES (:uid, :code, :exp)
           ON CONFLICT ("UserID") DO UPDATE
           SET "Code" = EXCLUDED."Code", "ExpiresAt" = EXCLUDED."ExpiresAt";
       SQL;
 
-      DBController::exec_statement($insertOtp, [
-          [':uid', $user_data['UserID'], PDO::PARAM_STR],
-          [':code', $otp, PDO::PARAM_STR],
-          [':exp', $expiry, PDO::PARAM_STR]
-      ]);
+        DBController::exec_statement($insertOtp, [
+            [':uid', $user_data['UserID'], PDO::PARAM_STR],
+            [':code', $otp, PDO::PARAM_STR],
+            [':exp', $expiry, PDO::PARAM_STR]
+        ]);
 
-      $email = "";
+        $email = "";
 
-      if ($user_data['Role'] === 'USER'){
-        $stmt = DBController::exec_statement(
-            'SELECT "Email" FROM "Customer" WHERE "UserID" = :uid',
-            [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
-        );
-        $row = $stmt->fetch();
-        $email = $row['Email'];
-      } else if ($user_data['Role'] === 'STAFF'){
-        $stmt = DBController::exec_statement(
-            'SELECT "Email" FROM "Staff" WHERE "UserID" = :uid',
-            [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
-        );
-        $row = $stmt->fetch();
-        $email = $row['Email'];
-        error_log($email);
-      }
-    /**
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
-        $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        if ($user_data['Role'] === 'USER') {
+            $stmt = DBController::exec_statement(
+                'SELECT "Email" FROM "Customer" WHERE "UserID" = :uid',
+                [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
+            );
+            $row = $stmt->fetch();
+            $email = $row['Email'];
+        } else if ($user_data['Role'] === 'STAFF') {
+            $stmt = DBController::exec_statement(
+                'SELECT "Email" FROM "Staff" WHERE "UserID" = :uid',
+                [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
+            );
+            $row = $stmt->fetch();
+            $email = $row['Email'];
+            error_log($email);
+        }
 
-        $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
-        $mail->addAddress($email);         // send to user’s email
+        // $mail = new PHPMailer(true);
+        // try {
+        //     $mail->isSMTP();
+        //     $mail->Host       = 'smtp.gmail.com';
+        //     $mail->SMTPAuth   = true;
+        //     $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
+        //     $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
+        //     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        //     $mail->Port       = 587;
 
-        $mail->isHTML(true);
-        $mail->Subject = 'Your Nexabank OTP Code';
-        $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
-        $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
+        //     $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
+        //     $mail->addAddress($email);         // send to user’s email
 
-        $mail->send();
-    } catch (Exception $e) {
-        error_log("Mailer Error: {$mail->ErrorInfo}");
-        AuthController::return_error('Unable to send OTP email.');
+        //     $mail->isHTML(true);
+        //     $mail->Subject = 'Your Nexabank OTP Code';
+        //     $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
+        //     $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
+
+        //     $mail->send();
+        // } catch (Exception $e) {
+        //     error_log("Mailer Error: {$mail->ErrorInfo}");
+        //     AuthController::return_error('Unable to send OTP email.');
+        // }
+
+
+        $_SESSION['pending_user'] = $user_data['UserID'];
+        $_SESSION['pending_role'] = $user_data['Role'];
+        // Redirect to OTP verification
+        header("Location: /otp");
+        exit;
     }
-**/
-
-      $_SESSION['pending_user'] = $user_data['UserID'];
-      $_SESSION['pending_role'] = $user_data['Role'];
-      // Redirect to OTP verification
-      header("Location: /otp");
-      exit;
-  }
 
 
 
     /**
      * Redirect user to appropriate pages
      */
-    private function redirect_user(string $role)
+    public function redirect_user(string $role)
     {
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
@@ -254,12 +255,16 @@ class AuthController
      * if user is not authenticated, redirect to page DEFAULT:'/login' \
      * if user's role is allowed for the page ($allowed_roles) DEFAULT: USER
      */
-    public function check_user_role(array $allowed_roles = [Roles::USER], $redirect_url = '/login')
+    public function check_user_role(array $allowed_roles = [Roles::USER])
     {
-        if (!isset($_SESSION['Role'])) AuthController::return_error('', $redirect_url);
+        if (!isset($_SESSION['Role'])) {
+            error_log('No role found in session, likely not logged in.');
+            header('Location: /logout');
+        }
 
         $user_role = Roles::tryFrom($_SESSION['Role']);
 
-        if (!in_array($user_role, $allowed_roles)) AuthController::return_error('', $redirect_url);
+        if (!in_array($user_role, $allowed_roles))
+            redirect_404();
     }
 }
