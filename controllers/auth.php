@@ -9,44 +9,7 @@ class AuthController
     const MAX_USERNAME_LEN = 50;
     const MAX_PASSWORD_LEN = 254;
 
-    /**
-     *  Old Attempt to authenticate user (Without 2FA)
-     */
-    /**public function attempt_auth(array $creds)
-    {
-        if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
-
-        $username = trim($creds['username'] ?? '');
-        $password  = trim($creds['password'] ?? '');
-
-        if (strlen($username) > AuthController::MAX_USERNAME_LEN) AuthController::return_error('Invalid username/password.');
-        if (strlen($password) > AuthController::MAX_PASSWORD_LEN) AuthController::return_error('Invalid username/password.');
-        if (check_for_non_alphanum($username)) AuthController::return_error('Only alphabets & numbers allowed for username.');
-        if ($username === '' || $password === '') AuthController::return_error('Invalid username/password.');
-
-        $user_hash = AuthController::retrieve_hash($username);
-
-        if ($user_hash === null) AuthController::return_error('Invalid username/password.');
-        if (!password_verify($password, $user_hash)) AuthController::return_error('Invalid username/password.');
-
-        $user_data = AuthController::get_user_info($username);
-
-        if ($user_data === false) AuthController::return_error('Error retrieving user.');
-
-        $role = $user_data["Role"];
-        hard_recreate_session();
-
-        $_SESSION["UserID"] = $user_data["UserID"];
-        $_SESSION["Role"] = $user_data["Role"];
-
-        AuthController::handle_different_roles($user_data);
-
-        AuthController::update_login_time($username);
-        error_log(json_encode($_SESSION));
-        AuthController::redirect_user($role);
-    }**/
-
-
+/** Authentication **/
   public function attempt_auth(array $creds)
   {
       if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
@@ -79,16 +42,25 @@ class AuthController
           [':exp', $expiry, PDO::PARAM_STR]
       ]);
 
-      $stmt = DBController::exec_statement(
-          'SELECT "Email" FROM "Customer" WHERE "UserID" = :uid',
-          [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
-      );
-      $row = $stmt->fetch();
-      $email = $row['Email'];
+      $email = "";
 
-
-
-    // Send OTP via Gmail
+      if ($user_data['Role'] === 'USER'){
+        $stmt = DBController::exec_statement(
+            'SELECT "Email" FROM "Customer" WHERE "UserID" = :uid',
+            [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
+        );
+        $row = $stmt->fetch();
+        $email = $row['Email'];
+      } else if ($user_data['Role'] === 'STAFF'){
+        $stmt = DBController::exec_statement(
+            'SELECT "Email" FROM "Staff" WHERE "UserID" = :uid',
+            [[':uid', $user_data['UserID'], PDO::PARAM_STR]]
+        );
+        $row = $stmt->fetch();
+        $email = $row['Email'];
+        error_log($email);
+      }
+    /**
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -112,7 +84,7 @@ class AuthController
         error_log("Mailer Error: {$mail->ErrorInfo}");
         AuthController::return_error('Unable to send OTP email.');
     }
-
+**/
 
       $_SESSION['pending_user'] = $user_data['UserID'];
       $_SESSION['pending_role'] = $user_data['Role'];
@@ -120,6 +92,8 @@ class AuthController
       header("Location: /otp");
       exit;
   }
+
+
 
     /**
      * Redirect user to appropriate pages

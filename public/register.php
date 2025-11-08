@@ -63,7 +63,6 @@ if (isset($_POST['submit'])) {
             [':email', $email, PDO::PARAM_STR]
         ]);
 
-
         if ($success) {
             echo "<script>alert('You have successfully registered');</script>";
             echo "<script>window.location.href ='login.php'</script>";
