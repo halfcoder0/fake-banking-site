@@ -28,3 +28,9 @@ enum Routes: string
     case LOGIN_PAGE = '/login';
     case TRANSFER_PAGE = '/transfer';
 }
+
+enum AccountTypes: string{
+    case CHECKING = 'Checking';
+    case SAVINGS = 'Savings';
+    case INVESTMENT = 'Investment';
+}
