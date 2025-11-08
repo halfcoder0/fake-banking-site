@@ -119,7 +119,7 @@ class ProfileController
 
         // Check username uniqueness
         if ($this->usernameExists($d['username'], $user_id))
-            return "Username is already taken.";
+            return "Username is not valid. Please choose a different one.";
 
         return null;
     }
@@ -176,7 +176,7 @@ class ProfileController
                 "Email"       = :email,
                 "DisplayName" = :displayName
             WHERE "CustomerID" = :cid
-            AND "UserID" = :uid;   -- IMPORTANT: prevents tampering
+            AND "UserID" = :uid;   
         SQL;
 
         $params = [

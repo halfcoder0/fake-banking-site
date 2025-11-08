@@ -18,21 +18,47 @@ try {
     $user_id = $_SESSION['UserID'];
     $customer_id = $_SESSION['CustomerID'];
 
-    // Handle POST form submission
-    if ($_SERVER["REQUEST_METHOD"] === "POST" && csrf_verify()) {
-        $result = $profile_controller->updateProfile($_POST, $user_id, $customer_id);
+    /* ============================================================
+     * POST REQUEST — handle form submission
+     * ============================================================ */
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-        if ($result['success']) {
-            $_SESSION['success'] = "Profile updated successfully";
+        if (!csrf_verify()) {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'msg' => 'Invalid CSRF token.'
+            ];
             header("Location: /profile");
             exit;
-        } else {
-            $_SESSION['error'] = $result['error'];
         }
+
+        $result = $profile_controller->updateProfile($_POST, $user_id, $customer_id);
+
+        if (!empty($result['success'])) {
+            $_SESSION['flash'] = [
+                'type' => 'success',
+                'msg' => 'Profile updated successfully!'
+            ];
+        } else {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'msg' => $result['error'] ?? "Update failed."
+            ];
+        }
+
+        // Redirect (PRG pattern)
+        header("Location: /profile");
+        exit;
     }
 
-    // Load data for display
+    /* ============================================================
+     * GET REQUEST — load profile + flash (if any)
+     * ============================================================ */
     $profile = $profile_controller->getProfile($user_id);
+
+    // Load & clear flash message
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
 
 } catch (Exception $e) {
     $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
@@ -699,24 +725,15 @@ try {
                             <div class="card-body">
 
                                 <h4 class="card-title">Welcome, <?= htmlspecialchars($_SESSION["DisplayName"]) ?></h4>
-                               <!-- Alerts -->
-                                <?php if (isset($_SESSION['success'])): ?>
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        Profile updated successfully!
+                                <!-- Alerts -->
+                                <?php if (!empty($flash)): ?>
+                                    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show"
+                                        role="alert">
+                                        <?= htmlspecialchars($flash['msg'], ENT_QUOTES) ?>
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <?php unset($_SESSION['success']); ?>
-                                <?php endif; ?>
-                                <?php if (isset($_SESSION['error'])): ?>
-                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                        <?= htmlspecialchars($flash['error'] ?? 'Update failed', ENT_QUOTES) ?>
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <?php unset($_SESSION['error']); ?>
                                 <?php endif; ?>
 
                                 <!-- ================== -->

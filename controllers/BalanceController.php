@@ -1,5 +1,5 @@
 <?php
-class AccountController
+class BalanceController
 {
   public function listAccounts(?string $customerId): array
   {

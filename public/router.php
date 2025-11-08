@@ -52,8 +52,8 @@ switch ($request) {
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';
         break;
-    case '/accounts':
-        require __DIR__ . $controllers . '/api/accounts.php';
+    case '/balances':
+        require __DIR__ . $controllers . '/api/balances.php';
         break;
     case '/profile':
         require __DIR__ . '/profile.php';

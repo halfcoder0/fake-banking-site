@@ -72,7 +72,7 @@ $(window).on('load', function () {
   $b.DataTable({
     processing: true,
     ajax: {
-      url: '/accounts',  
+      url: '/balances',  
       type: 'POST',
       dataSrc: '',
       data: {'GetAccounts':'GetAccounts'},

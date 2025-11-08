@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once __DIR__ . '/../AccountController.php';
+require_once __DIR__ . '/../BalanceController.php';
 try {
     // Enforce login
     if (empty($_SESSION['UserID']) || empty($_SESSION['CustomerID']) || $_SERVER["REQUEST_METHOD"] !== "POST" || !isset($_POST["GetAccounts"])) {
@@ -10,7 +10,7 @@ try {
     }
 
     DBController::init_db();
-    $ctrl = new AccountController();
+    $ctrl = new BalanceController();
     $rows = $ctrl->listAccounts($_SESSION['CustomerID']); 
 
     $rows = filter_var_array($rows, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
