@@ -369,7 +369,7 @@ class admin_controller
 
 // --- Handle POST requests from the form ---
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-    http_response_code(404);
+    redirect_404();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -388,6 +388,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             admin_controller::deleteStaff();
             break;
         default:
-            http_response_code(404);
+            redirect_404();
     }
 }

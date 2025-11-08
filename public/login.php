@@ -23,9 +23,9 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
 }
 
 // Check if user is logged in, if yes then go to dashbaord
-if (isset($_SESSION['UserID'])) {
-    header('Location: /dashboard');
-    exit;
+if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
+    $auth_controller = new AuthController();
+    $auth_controller->redirect_user($_SESSION["Role"]);
 }
 
 ?>
@@ -95,8 +95,8 @@ if (isset($_SESSION['UserID'])) {
                                     </div>
                                     <input name="password" type="password" maxlength="254" class="form-control form-control-lg" placeholder="Password" aria-label="Password" required>
                                 </div>
-                               
-                                
+
+
                                 <!-- TO BE IMPLEMENTED <div class="form-group row">
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">
