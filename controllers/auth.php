@@ -66,8 +66,8 @@ class AuthController
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'nexabanksit@gmail.com';      // your Gmail
-        $mail->Password   = 'sbladfbhuspatiiw';        // 16-char App Password
+        $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
+        $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
