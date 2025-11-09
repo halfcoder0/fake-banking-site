@@ -1,4 +1,6 @@
 <?php
+require_once('../controllers/security/csrf.php');
+
 class admin_controller
 {
     public static function getUserStats()
@@ -24,6 +26,11 @@ class admin_controller
     public static function deleteStaff()
     {
         $userid = trim($_POST['userid']) ?? '';
+        if (!csrf_verify()){
+            $_SESSION["delete_staff_status"] = "Invalid request";
+            header("Location: /update_staff");
+        }
+
         if (!admin_controller::is_valid_uuid($userid)) {
             $_SESSION["delete_staff_status"] = "Invalid userid. Please try again.";
             header("Location: /update_staff");
@@ -133,6 +140,11 @@ class admin_controller
         $dob = $_POST['dob'] ?? null;
         $contact = $_POST['contact'] ?? null;
 
+        if (!csrf_verify()){
+            $_SESSION["update_staff_status"] = "Invalid request";
+            header("Location: /update_staff");
+        }
+
         try {
             admin_controller::validate_staff_fields($userid, $name, $email, $password, $confirm_password, $role, $displayName, $dob, $contact, SessionVariables::UPDATE_STAFF_STATUS);
 
@@ -225,6 +237,10 @@ class admin_controller
 
     public static function searchStaff($search_name = '')
     {
+        if (!csrf_verify()){
+            header("Location: /update_staff");
+        }
+
         $name = $_POST['name'] ?? '';
         if ($search_name !== '')
             $name = $search_name;
