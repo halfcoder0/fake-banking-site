@@ -289,6 +289,12 @@ class admin_controller
         $curr_date = $now->format('Y-m-d H:i:s');
 
         try {
+            if (!csrf_verify()){
+                error_log("Invalid CSRF token");
+                throw new Exception("Invalid request.");
+            }
+               
+
             admin_controller::validate_staff_fields(false, $name, $email, $password, $confirm_password, $role, $displayName, $dob, $contact, SessionVariables::CREATE_STAFF_STATUS->value);
 
             // Hash password
@@ -368,9 +374,6 @@ class admin_controller
 }
 
 // --- Handle POST requests from the form ---
-if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-    redirect_404();
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 

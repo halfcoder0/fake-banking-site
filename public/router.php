@@ -64,6 +64,30 @@ switch ($request) {
     case '/create_delete_user_account':
         require __DIR__ . '/create_delete_user_account.php';
         break;
+    case '/approve_claim':
+        require __DIR__ . '/approve_claim.php';
+        break;
+    case '/assign_claims':
+        require __DIR__ . '/assign_claims.php';
+        break;
+    case '/delete_claims':
+        require __DIR__ . '/deleteclaims.php';
+        break;
+    case '/reject_claim':
+        require __DIR__ . '/reject_claim.php';
+        break;
+    case '/staff/assigned_claims':
+        require __DIR__ . '/staffassignedclaims.php';
+        break;
+    case '/staff/claims_overview':
+        require __DIR__ . '/staffclaimsoverview.php';
+        break;
+    case '/upload_claims':
+        require __DIR__ . '/uploadclaims.php';
+        break;
+    case '/view_claims':
+        require __DIR__ . '/viewclaims.php';
+        break;
     default:
         http_response_code(404);
         require __DIR__ . '/404.php';
