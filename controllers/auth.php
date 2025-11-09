@@ -8,7 +8,7 @@ use PHPMailer\PHPMailer\Exception;
 class AuthController
 {
     const MAX_USERNAME_LEN = 50;
-    const MAX_PASSWORD_LEN = 254;
+    const MAX_PASSWORD_LEN = 100;
 
     /** Authentication **/
     public function attempt_auth(array $creds)
