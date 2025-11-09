@@ -3,26 +3,12 @@ require_once('../controllers/security/session_bootstrap.php');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$userid = $_SESSION['UserID'] ?? null;
-$role   = $_SESSION['Role'] ?? null;
+$StaffID = $_SESSION['StaffID'] ?? null;
 //Check if this request from a legitimate staff
-if ($userid === '' || $role !== 'STAFF') {
+if ($StaffID === '') {
     header('Location: /login');
     exit;
 }
-$getStaffName = <<<SQL
-    SELECT "StaffID"
-    FROM "Staff"
-    WHERE "UserID" = :uid
-    LIMIT 1;
-    SQL;
-$stmt = DBController::exec_statement($getStaffName,[[':uid', $_SESSION['UserID'], PDO::PARAM_STR]]);
-$row = $stmt->fetch();
-if (!$row) {
-  header('Location: /login');
-  exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['customer_id'])) {
     $userId = $_POST['customer_id'];
     // 1. Generate secure random password

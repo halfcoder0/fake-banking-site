@@ -1,13 +1,16 @@
 <?php
 require_once('../controllers/security/session_bootstrap.php');
-require_once('../controllers/db_controller.php');
+require('../controllers/auth.php');
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp = trim($_POST['otp']);
     $userId = $_SESSION['pending_user'] ?? null;
-
+    $role  =  $_SESSION['pending_role'] ?? null;;
+    $user_data = [
+    'UserID' => $userId,
+    'Role'   => $role];
 
     if ($userId && $otp) {
         $stmt = DBController::exec_statement(
@@ -16,18 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         $row = $stmt->fetch();
         if ($row && $row['Code'] === $otp && strtotime($row['ExpiresAt']) > time()) {
-            // OTP valid → complete login
-            $_SESSION['UserID'] = $userId;
-            $_SESSION['Role']   = $_SESSION['pending_role'];
-            unset($_SESSION['pending_user'], $_SESSION['pending_role']);
-
             //Once 2FA is successfull, we can remove the 2FA at the database
             DBController::exec_statement(
                 'DELETE FROM "UserOTP" WHERE "UserID" = :uid',
                 [[':uid', $userId, PDO::PARAM_STR]]
             );
-            // Redirect to dashboard (or role-specific page)
-            header("Location: /dashboard");
+          $auth_controller = new AuthController();
+          $auth_controller->handle_different_roles($user_data);
             exit;
         } else {
             $error = "Invalid or expired code.";
@@ -35,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error = "Missing OTP or session expired.";
     }
+    unset($_SESSION['pending_user'], $_SESSION['pending_role']);
+
 }
 ?>
 <!DOCTYPE html>

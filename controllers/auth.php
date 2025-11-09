@@ -85,8 +85,6 @@ class AuthController
         //     error_log("Mailer Error: {$mail->ErrorInfo}");
         //     AuthController::return_error('Unable to send OTP email.');
         // }
-
-
         $_SESSION['pending_user'] = $user_data['UserID'];
         $_SESSION['pending_role'] = $user_data['Role'];
         // Redirect to OTP verification
@@ -103,12 +101,15 @@ class AuthController
     {
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
+                error_log("user page");
                 header('Location: /dashboard');
                 exit;
             case Roles::STAFF:
-                header('Location: /staff-dashboard');
+                error_log("staff page");
+                header('Location: /viewCustomers');
                 exit;
             case Roles::ADMIN:
+                error_log("admin page");
                 header('Location: /admin-dashboard');
                 exit;
         }
@@ -191,7 +192,7 @@ class AuthController
     /**
      * Get & Set role-specific info
      */
-    private function handle_different_roles(array $user_data)
+    public function handle_different_roles(array $user_data)
     {
         $user_id = $user_data["UserID"];
         $role = $user_data["Role"];
@@ -199,17 +200,21 @@ class AuthController
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
                 AuthController::handle_user($user_id);
+                error_log("user");
                 break;
             case Roles::STAFF:
                 AuthController::handle_staff($user_id);
+                error_log("staff");
                 break;
             case Roles::ADMIN:
                 AuthController::handle_staff($user_id);
+                error_log("staff+");
                 break;
             default:
                 error_log("Unknown role {$role} for user {$user_id}");
                 throw new Exception("Error with user info.");
         }
+        AuthController::redirect_user($role);
     }
 
     /**

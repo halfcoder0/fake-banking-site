@@ -73,9 +73,13 @@ switch ($request) {
     case '/viewCustomers':
         require __DIR__ . '/viewCustomers.php';
         break;
+    case '/deleteUser':
+        require __DIR__ . '/deleteUser.php';
+        break;
     case '/resetPasswordRequest':
         require __DIR__ . '/resetPasswordRequest.php';
         break;
+
     default:
         require __DIR__ . '/404.php';
 }
