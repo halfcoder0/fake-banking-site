@@ -14,3 +14,5 @@ Nexabank - A fake banking site for SIT - ICT2216
     docker-compose exec laravel_php_app bash
     composer install
 ```
+
+Let the workflow run
