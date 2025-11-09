@@ -1,0 +1,23 @@
+name: CI Orchestrator
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show commit + repo info
+        run: |
+          echo "Repo: $GITHUB_REPOSITORY"
+          echo "Ref:  $GITHUB_REF"
+          echo "SHA:  $GITHUB_SHA"
+          git --no-pager log -1 --pretty=oneline
+
+      - name: List files (sanity)
+        run: ls -la
