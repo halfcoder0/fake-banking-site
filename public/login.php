@@ -2,7 +2,6 @@
 require_once('../controllers/security/csrf.php');
 require('../controllers/auth.php');
 
-
 $nonce = generate_random();
 add_csp_header($nonce);
 
@@ -12,14 +11,13 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
         $auth_controller->attempt_auth($_POST);
     } catch (Exception $exception) {
         $_SESSION["error"] = "Error logging in.";
-        error_log($exception->getMessage());
+        error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
         header("Location: /login");
     } catch (Throwable $thowable) {
         $_SESSION["error"] = "Error logging in.";
-        error_log($thowable->getMessage());
+        error_log($thowable->getMessage() . "\n" . $thowable->getTraceAsString());
         header("Location: /login");
     }
-
     exit;
 }
 
@@ -30,6 +28,7 @@ if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
 }
 
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -82,31 +81,20 @@ if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
                     <?php endif; ?>
                     <div class="row">
                         <div class="col-12">
-                            <form class="form-horizontal m-t-20 needs-validation" id="loginform" method="POST" action="/login">
+                            <form class="form-horizontal m-t-20" id="loginform" method="POST" action="/login">
                                 <?= csrf_input() ?>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
                                     </div>
-                                    <input name="username" type="text" maxlength="50" class="form-control form-control-lg" placeholder="Username" aria-label="Username" required>
+                                    <input name="username" type="text" class="form-control form-control-lg" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" required>
                                 </div>
-                                <div class="input-group has-validation mb-3">
+                                <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon2"><i class="ti-pencil"></i></span>
                                     </div>
-                                    <input name="password" type="password" maxlength="254" class="form-control form-control-lg" placeholder="Password" aria-label="Password" required>
+                                    <input name="password" type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" required>
                                 </div>
-
-
-                                <!-- TO BE IMPLEMENTED <div class="form-group row">
-                                    <div class="col-md-12">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="customCheck1">
-                                            <label class="custom-control-label" for="customCheck1">Remember me</label>
-                                            <a href="" id="to-recover" class="text-dark float-right"><i class="fa fa-lock m-r-5"></i> Forgot pwd?</a>
-                                        </div>
-                                    </div>
-                                </div> -->
                                 <div class="form-group text-center">
                                     <div class="col-xs-12 p-b-20">
                                         <button class="btn btn-block btn-lg btn-info" type="submit" name="login" value="login">Log In</button>

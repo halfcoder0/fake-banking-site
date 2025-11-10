@@ -3,30 +3,37 @@ require_once('../controllers/security/csrf.php');
 require_once('../controllers/auth.php');
 require('../controllers/AccountController.php');
 
+$nonce = generate_random();
+add_csp_header($nonce);
+
 try {
     $userid = $_SESSION[SessionVariables::USER_ID->value];
     $auth_controller = new AuthController();
     $auth_controller->check_user_role([Roles::USER]);
     $msg = "";
-} catch (Exception $e) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
+} catch (Exception $exception) {
+    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+    redirect_500();
+} catch (Throwable $throwable) {
+    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+    redirect_500();
 }
 
 // Create account when customer submit account type to be created
-if (isset($_POST['submit']) && isset($_POST['account']) && csrf_verify()) {
-  $Account_Controller = new AccountController();
-  $msg = $Account_Controller -> create_account();
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit']) && isset($_POST['account']) && csrf_verify()) {
+    $Account_Controller = new AccountController();
+    $msg = $Account_Controller->create_account();
 }
 
 
-if (isset($_POST['delete']) && csrf_verify()) {
-  $Account_Controller = new AccountController();
-  $msg = $Account_Controller -> delete_account();
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete']) && csrf_verify()) {
+    $Account_Controller = new AccountController();
+    $msg = $Account_Controller->delete_account();
 }
 ?>
 
 <!DOCTYPE html>
-<html dir="ltr" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -37,11 +44,11 @@ if (isset($_POST['delete']) && csrf_verify()) {
     <meta name="author" content="">
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon.png">
-    <title>Balanace and Transaction Dashboard</title>
+    <title>Nexabank | Balance and Transaction Dashboard</title>
     <!-- This page plugin CSS -->
-    <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
+    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link href="dist/css/style.min.css" rel="stylesheet">
+    <link nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" href="dist/css/style.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -695,7 +702,7 @@ if (isset($_POST['delete']) && csrf_verify()) {
         <!-- Page wrapper  -->
         <!-- ============================================================== -->
         <div class="page-wrapper">
-          
+
             <!-- ============================================================== -->
             <!-- Container fluid  -->
             <!-- ============================================================== -->
@@ -709,20 +716,21 @@ if (isset($_POST['delete']) && csrf_verify()) {
 
                                 <!-- Form submission for new account creation -->
                                 <form method="POST" action="">
-                                <?= csrf_input() ?>
-                                <label>Choose account type:</label>
-                                <select name="account" aria-controls="balances_table" class="form-control form-control-sm">
-                                    <option name="account">Checking</option>
-                                    <option name="account">Savings</option>
-                                    <option name="account">Investment</option>
-                                    <input type="hidden" name="userid" value="<?php echo htmlspecialchars($userid); ?>">
-                                </select>
-                                </br>
-                                <input name="submit" type="submit" value="Create Account"> 
+                                    <?= csrf_input() ?>
+                                    <label>Choose account type:</label>
+                                    <select name="account" aria-controls="balances_table" class="form-control form-control-sm">
+                                        <option name="account">Checking</option>
+                                        <option name="account">Savings</option>
+                                        <option name="account">Investment</option>
+                                        <input type="hidden" name="userid" value="<?php echo htmlspecialchars($userid); ?>">
+                                    </select>
+                                    </br>
+                                    <input name="submit" type="submit" value="Create Account">
                                 </form>
 
                                 <!-- Print Success or Failure messages -->
-                                <?php echo htmlspecialchars($msg);  $msg = ""?>
+                                <?php echo htmlspecialchars($msg);
+                                $msg = "" ?>
 
                                 <br><a href="/dashboard"><input type="submit" value="Back to Dashboard"></a>
                                 <br>
@@ -737,10 +745,10 @@ if (isset($_POST['delete']) && csrf_verify()) {
                                                 <th>Balance (SGD)</th>
                                                 <th></th>
                                             </tr>
-                                            <?php 
+                                            <?php
                                             // List customer accounts to delete in a table
                                             $Account_Controller = new AccountController();
-                                            $Account_Controller -> list_account_to_delete($userid);
+                                            $Account_Controller->list_account_to_delete($userid);
                                             ?>
                                         </thead>
                                     </table>
@@ -763,18 +771,6 @@ if (isset($_POST['delete']) && csrf_verify()) {
                 <!-- ============================================================== -->
             </div>
             <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer text-center">
-                All Rights Reserved by Nice admin. Designed and Developed by
-                <a href="https://wrappixel.com">WrapPixel</a>.
-            </footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
         </div>
         <!-- ============================================================== -->
         <!-- End Page wrapper  -->
@@ -786,31 +782,24 @@ if (isset($_POST['delete']) && csrf_verify()) {
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-    <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap tether Core JavaScript -->
-    <script src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
-    <script src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/popper.js/dist/umd/popper.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- apps -->
-    <script src="../../dist/js/app.min.js"></script>
-    <script src="../../dist/js/app.init.horizontal.js"></script>
-    <script src="../../dist/js/app-style-switcher.horizontal.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app.init.horizontal.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/app-style-switcher.horizontal.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
-    <script src="../../assets/extra-libs/sparkline/sparkline.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/sparkline/sparkline.js"></script>
     <!--Wave Effects -->
-    <script src="../../dist/js/waves.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/waves.js"></script>
     <!--Custom JavaScript -->
-    <script src="../../dist/js/custom.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../dist/js/custom.min.js"></script>
     <!--This page plugins -->
-    <script src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
-    <!-- start - This is for export functionality only -->
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
-    <script src="../../dist/js/pages/datatable/datatable-advanced.init.js"></script>
-
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>" src="../../assets/extra-libs/DataTables/datatables.min.js"></script>
+    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+        $(".preloader").fadeOut();
+    </script>
 </body>

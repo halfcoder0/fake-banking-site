@@ -11,11 +11,11 @@ try {
     $auth_controller = new AuthController();
     $auth_controller->check_user_role([Roles::ADMIN]);
 } catch (Exception $exception) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
     error_log($exception->getMessage() . $exception->getTraceAsString());
+    redirect_500();
 } catch (Throwable $throwable) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
     error_log($throwable->getMessage() . $throwable->getTraceAsString());
+    redirect_500();
 }
 ?>
 
@@ -27,30 +27,33 @@ include('../includes/admin_header.php');
 ?>
 
 <style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
-.username-clickable {
-  cursor: pointer;
-  font-weight: bold;
-  text-decoration: underline;
-  color: white;
-  transition: color 0.2s ease;
-}
+    .username-clickable {
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: underline;
+        color: white;
+        transition: color 0.2s ease;
+    }
 
-.username-clickable:hover {
-  color: #66ccff;
-}
+    .username-clickable:hover {
+        color: #66ccff;
+    }
 
-.expandable-row {
-  display: none; /* hidden on page load */
-  background-color: #1e1e1e; /* optional for contrast */
-  color: #ddd;
-}
+    .expandable-row {
+        display: none;
+        /* hidden on page load */
+        background-color: #1e1e1e;
+        /* optional for contrast */
+        color: #ddd;
+    }
 </style>
 
 <style nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
-.user-details-row {
-  display: none ; /* Force hidden on page load */
-  background-color: #2c2c2c;
-}
+    .user-details-row {
+        display: none;
+        /* Force hidden on page load */
+        background-color: #2c2c2c;
+    }
 </style>
 
 <body>
@@ -112,6 +115,7 @@ include('../includes/admin_header.php');
                                 <h3 class="card-title text-center m-b-30">Search Staff</h3>
                                 <!-- Centered Search Form -->
                                 <form class="form-inline justify-content-center mb-4" method="POST" action="/admin_controller">
+                                    <?= csrf_input() ?>
                                     <!-- Hidden action -->
                                     <input type="hidden" name="action" value="search_staff">
                                     <div class="form-group mr-2">
@@ -144,6 +148,7 @@ include('../includes/admin_header.php');
                                                                         <td><?= htmlspecialchars($user['LastLogin']) ?></td>
                                                                         <td>
                                                                             <form method="POST" action="/admin_controller" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                                                <?= csrf_input() ?>
                                                                                 <input type="hidden" name="action" value="delete_staff">
                                                                                 <input type="hidden" name="userid" value="<?= $user['UserID'] ?>">
                                                                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -154,6 +159,7 @@ include('../includes/admin_header.php');
                                                                         <!-- Match number of table columns exactly -->
                                                                         <td colspan="4">
                                                                             <form class="user-update-form" method="POST" action="/admin_controller">
+                                                                                <?= csrf_input() ?>
                                                                                 <input type="hidden" name="action" value="update_staff">
                                                                                 <input type="hidden" name="userid" id="userid" value="<?= $user['UserID'] ?>">
 
