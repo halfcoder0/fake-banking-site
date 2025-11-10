@@ -5,7 +5,7 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') {
     if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
         // Refuse request unless HTTPS (In prod)
-        // exit('HTTPS required');
+        exit('HTTPS required');
     }
 }
 
@@ -28,7 +28,7 @@ function configure_session()
     ini_set('session.use_only_cookies', '1');               // no SID in URLs
     ini_set('session.use_trans_sid', '0');                  // disable URL-based session IDs
     ini_set('session.cookie_httponly', '1');
-    //ini_set('session.cookie_secure', '1');                // cookie only over HTTPS
+    ini_set('session.cookie_secure', '1');                // cookie only over HTTPS
     ini_set('session.use_strict_mode', '1');                // reject uninitialized IDs (anti-fixation)
     ini_set('session.sid_length', '48');                    // longer IDs
     ini_set('session.sid_bits_per_character', '6');         // base64-like charset
@@ -39,7 +39,7 @@ function configure_session()
         'lifetime' => 0,            // session cookie (dies with browser)
         'path'     => '/',
         'domain'   => '',
-        //'secure'   => true,       // require HTTPS
+        'secure'   => true,       // require HTTPS
         'httponly' => true,         // prevent js from reading cookie  
         'samesite' => 'Lax',
     ];
@@ -74,9 +74,6 @@ function perform_checks()
     // Fingerprint Check
     $current_fp = get_fingerprint();
     if ($_SESSION['_meta']['fingerprint'] !== $current_fp) kill_session();
-
-    // IP Check
-    //if ($_SERVER['REMOTE_ADDR'] != $_SESSION['_meta']['ip_address']) kill_session();
 
     $age = time() - ($_SESSION['_meta']['created'] ?? time());
     $last_regen = $_SESSION['_meta']['last_regen'] ?? 0;
@@ -147,7 +144,7 @@ function session_secure_logout(): void
             'expires'  => time() - 42000,
             'path'     => $params['path'] ?? '/',
             'domain'   => $params['domain'] ?? '',
-            //'secure'   => $params['secure'] ?? true, // require HTTPS
+            'secure'   => $params['secure'] ?? true, // require HTTPS
             'httponly' => $params['httponly'] ?? true,
             'samesite' => $params['samesite'] ?? 'Lax',
         ]);

@@ -86,29 +86,29 @@ class AuthController
         $row = $stmt->fetch();
         $email = $row['Email'];
 
-        // $mail = new PHPMailer(true);
-        // try {
-        //     $mail->isSMTP();
-        //     $mail->Host       = 'smtp.gmail.com';
-        //     $mail->SMTPAuth   = true;
-        //     $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
-        //     $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
-        //     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        //     $mail->Port       = 587;
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
+            $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
 
-        //     $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
-        //     $mail->addAddress($email);         // send to user’s email
+            $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
+            $mail->addAddress($email);         // send to user’s email
 
-        //     $mail->isHTML(true);
-        //     $mail->Subject = 'Your Nexabank OTP Code';
-        //     $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
-        //     $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
+            $mail->isHTML(true);
+            $mail->Subject = 'Your Nexabank OTP Code';
+            $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
+            $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
 
-        //     $mail->send();
-        // } catch (Exception $e) {
-        //     error_log("Mailer Error: {$mail->ErrorInfo}");
-        //     AuthController::return_error('Unable to send OTP email.');
-        // }
+            $mail->send();
+        } catch (Exception $e) {
+            error_log("Mailer Error: {$mail->ErrorInfo}");
+            AuthController::return_error('Unable to send OTP email.');
+        }
 
         $_SESSION['pending_user'] = $user_data['UserID'];
         $_SESSION['pending_role'] = $user_data['Role'];
@@ -150,20 +150,56 @@ class AuthController
         if ($userID === '')
             AuthController::return_error('Error with login');
 
-        $update_query = '
+        DBController::$pdo->beginTransaction();
+
+        $select_query = <<<SQL
+            SELECT *
+            FROM public."User"
+            WHERE "UserID" = :userID
+            FOR UPDATE;
+        SQL;
+        $stmt = DBController::exec_statement($select_query, [[':userID', $userID, PDO::PARAM_STR]]);
+        if ($stmt === false){
+            DBController::$pdo->rollBack();
+            AuthController::return_error('Error logging in.');
+        }
+            
+        $update_query = <<<SQL
             UPDATE public."User"
             SET "LastLogin" = :lastLogin
-            WHERE "UserID" = :userID;';
+            WHERE "UserID" = :userID;
+            SQL;
         $now = new DateTime();
         $now = $now->format('Y-m-d H:i:s');
-
         $params = array(
             [':userID', $userID, PDO::PARAM_STR],
             [':lastLogin', $now, PDO::PARAM_STR]
         );
-        $success = DBController::exec_statement($update_query, $params);
 
-        if (!$success) AuthController::return_error('Error updating user.');
+        $success = DBController::exec_statement($update_query, $params);
+        if (!$success){
+            DBController::$pdo->rollBack();
+            AuthController::return_error('Error logging in.');
+        }
+
+        DBController::exec_statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+
+        $insert_query = <<<SQL
+            INSERT INTO public."LoginHistory"("RecordID", "SessionID", "UserID", "LastLogged")
+            VALUES (gen_random_uuid(), :sessID, :userID, :lastLogin);
+            SQL;
+        $params = array(
+            [':sessID', session_id(), PDO::PARAM_STR],
+            [':userID', $userID, PDO::PARAM_STR],
+            [':lastLogin', $now, PDO::PARAM_STR]
+        );
+        $success = DBController::exec_statement($insert_query, $params);
+        if (!$success){
+            DBController::$pdo->rollBack();
+            AuthController::return_error('Error logging in.');
+        }
+        
+        DBController::$pdo->commit();
     }
 
     /**

@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS public."Claims"
 (
     "ClaimID" uuid NOT NULL,
     "CustomerID" uuid NOT NULL,
-    "ManagedBy" uuid NOT NULL,
+    "ManagedBy" uuid,
     "ImagePath" character varying(1000) COLLATE pg_catalog."default" NOT NULL,
     "Description" character varying(1000) COLLATE pg_catalog."default" NOT NULL,
     "CreatedAt" timestamp with time zone NOT NULL,
-    "UpdatedAt" timestamp with time zone NOT NULL,
+    "ApprovedAt" timestamp with time zone,
     CONSTRAINT "Claims_pkey" PRIMARY KEY ("ClaimID"),
     CONSTRAINT "Claims_ManagedBy_key" UNIQUE ("ManagedBy")
 );
@@ -40,11 +40,10 @@ CREATE TABLE IF NOT EXISTS public."Customer"
 CREATE TABLE IF NOT EXISTS public."LoginHistory"
 (
     "RecordID" uuid NOT NULL,
-    "SessionID" uuid NOT NULL,
     "UserID" uuid NOT NULL,
     "LastLogged" timestamp with time zone NOT NULL,
+    "SessionID" character varying(255) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "LoginHistory_pkey" PRIMARY KEY ("RecordID"),
-    CONSTRAINT "LoginHistory_SessionID_key" UNIQUE ("SessionID"),
     CONSTRAINT "LoginHistory_UserID_key" UNIQUE ("UserID")
 );
 
@@ -75,11 +74,12 @@ CREATE TABLE IF NOT EXISTS public."Staff"
 CREATE TABLE IF NOT EXISTS public."Transaction"
 (
     "TransactionID" uuid NOT NULL,
-    "ToAccount" bigint NOT NULL,
-    "FromAccount" bigint NOT NULL,
+    "ToAccount" bigint,
+    "FromAccount" bigint,
     "ReferenceNumber" bigint NOT NULL,
     "TransactionDate" timestamp with time zone NOT NULL,
     "Amount" money NOT NULL,
+    "Type" character varying(20) COLLATE pg_catalog."default",
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("TransactionID")
 );
 
@@ -93,6 +93,14 @@ CREATE TABLE IF NOT EXISTS public."User"
     CONSTRAINT "User_pkey" PRIMARY KEY ("UserID"),
     CONSTRAINT "Unique Username" UNIQUE ("Username")
         INCLUDE("UserID")
+);
+
+CREATE TABLE IF NOT EXISTS public."UserOTP"
+(
+    "UserID" uuid NOT NULL,
+    "Code" character varying(6) COLLATE pg_catalog."default" NOT NULL,
+    "ExpiresAt" timestamp with time zone NOT NULL,
+    CONSTRAINT "UserOTP_pkey" PRIMARY KEY ("UserID")
 );
 
 ALTER TABLE IF EXISTS public."Account"
@@ -111,16 +119,6 @@ ALTER TABLE IF EXISTS public."Claims"
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public."Claims"
-    ADD CONSTRAINT "Claims_ManagedBy_fkey" FOREIGN KEY ("ManagedBy")
-    REFERENCES public."Staff" ("StaffID") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS "Claims_ManagedBy_key"
-    ON public."Claims"("ManagedBy");
-
-
 ALTER TABLE IF EXISTS public."Customer"
     ADD CONSTRAINT "Customer_UserID_fkey" FOREIGN KEY ("UserID")
     REFERENCES public."User" ("UserID") MATCH SIMPLE
@@ -129,16 +127,6 @@ ALTER TABLE IF EXISTS public."Customer"
     NOT VALID;
 CREATE INDEX IF NOT EXISTS "Customer_UserID_key"
     ON public."Customer"("UserID");
-
-
-ALTER TABLE IF EXISTS public."LoginHistory"
-    ADD CONSTRAINT "LoginHistory_SessionID_fkey" FOREIGN KEY ("SessionID")
-    REFERENCES public."Session" ("SessionID") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS "LoginHistory_SessionID_key"
-    ON public."LoginHistory"("SessionID");
 
 
 ALTER TABLE IF EXISTS public."LoginHistory"
@@ -171,19 +159,12 @@ CREATE INDEX IF NOT EXISTS "Staff_UserID_key"
     ON public."Staff"("UserID");
 
 
-ALTER TABLE IF EXISTS public."Transaction"
-    ADD CONSTRAINT "Transaction_FromAccount_fkey" FOREIGN KEY ("FromAccount")
-    REFERENCES public."Account" ("AccountID") MATCH SIMPLE
+ALTER TABLE IF EXISTS public."UserOTP"
+    ADD CONSTRAINT "UserOTP_UserID_fkey" FOREIGN KEY ("UserID")
+    REFERENCES public."User" ("UserID") MATCH SIMPLE
     ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS public."Transaction"
-    ADD CONSTRAINT "Transaction_ToAccount_fkey" FOREIGN KEY ("ToAccount")
-    REFERENCES public."Account" ("AccountID") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
+    ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS "UserOTP_pkey"
+    ON public."UserOTP"("UserID");
 
 END;

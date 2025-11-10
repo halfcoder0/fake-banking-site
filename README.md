@@ -15,15 +15,11 @@ Nexabank - A fake banking site for SIT - ICT2216
     composer install
 ```
 
+## Setup Database
 
-## FOR OTP
-Create the UserOTP table:
+1. Login to PGAdmin on port 8383
 
-CREATE TABLE "UserOTP" (
-  "UserID" UUID PRIMARY KEY REFERENCES "User"("UserID") ON DELETE CASCADE,
-  "Code"   VARCHAR(6) NOT NULL,
-  "ExpiresAt" TIMESTAMP WITH TIME ZONE NOT NULL
-);
+2. Paste and execute the queries in `sql` folder
 
-2. composer require phpmailer/phpmailer
-(Add this on the docker container)
+    - `create_all_tables.sql`
+    - `insert_dummy_data.sql`

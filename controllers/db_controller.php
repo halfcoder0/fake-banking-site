@@ -45,32 +45,28 @@ class DBController
      * Usage: exec_statement($query, array([ $param_name, value, PDO type ]) ) \
      * Example: exec_statement($query,array([':username', $username, PDO::PARAM_STR]))
      */
-     public static function exec_statement(string $query, array $params = []): bool|PDOStatement
-     {
-         if (DBController::$pdo === NULL) {
-             error_log("[DB ERROR] PDO is null, DB not initialized!");
-             throw new Exception("Error obtaining data.");
-         }
+    public static function exec_statement(string $query, array $params = []): bool|PDOStatement
+    {
+        if (DBController::$pdo === NULL) {
+            error_log("[DB ERROR] PDO is null, DB not initialized!");
+            throw new Exception("Error obtaining data.");
+        }
 
-         try {
-             error_log("[DB] SQL: " . $query);
-             $stmt = DBController::$pdo->prepare($query);
+        try {
+            error_log("[DB] SQL: " . $query);
+            $stmt = DBController::$pdo->prepare($query);
 
-             foreach ($params as $p) {
-                 error_log("[DB] Binding {$p[0]} = " . var_export($p[1], true));
-                 $stmt->bindValue($p[0], $p[1], $p[2]);
-             }
+            foreach ($params as $p) {
+                $stmt->bindValue($p[0], $p[1], $p[2]);
+            }
 
-             $stmt->execute();
-             error_log("[DB] Statement executed successfully.");
-             return $stmt;
-
-         } catch (PDOException $e) {
-             error_log("[DB ERROR] SQL: " . $query);
-             error_log("[DB ERROR] Params: " . print_r($params, true));
-             error_log("[DB ERROR] Message: " . $e->getMessage());
-             throw new Exception("Error obtaining data.");
-         }
-     }
-
+            $stmt->execute();
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log("[DB ERROR] SQL: " . $query);
+            error_log("[DB ERROR] Params: " . print_r($params, true));
+            error_log("[DB ERROR] Message: " . $e->getMessage());
+            throw new Exception("Error obtaining data.");
+        }
+    }
 }

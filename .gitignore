@@ -29,3 +29,5 @@ Homestead.json
 .phpactor.json
 auth.json
 /public/assets/images/uploads
+ssl-key.pem
+ssl.pem
