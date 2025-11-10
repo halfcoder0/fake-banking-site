@@ -8,7 +8,6 @@ enum Roles: string
     case USER = "USER";
     case STAFF = "STAFF";
     case ADMIN = "ADMIN";
-    case DELETED = "DELETED";
 }
 
 enum SessionVariables: string
@@ -25,7 +24,6 @@ enum SessionVariables: string
     case UPDATE_STAFF_STATUS = 'update_staff_status';
     case CREATE_STAFF_STATUS = 'create_staff_status';
     case NONCE = 'nonce';
-    case USER_DELETE_STATUS = 'user_delete_status';
 }
 
 enum Routes: string

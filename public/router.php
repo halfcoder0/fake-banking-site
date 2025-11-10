@@ -1,8 +1,6 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
-require_once __DIR__ . '/../controllers/security/session_bootstrap.php';
-require_once __DIR__ . '/../controllers/helpers.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
@@ -67,6 +65,24 @@ switch ($request) {
     case '/accounts':
         require __DIR__ . $controllers . '/api/accounts.php';
         break;
+    case '/deleteclaims':
+        require __DIR__ . '/deleteclaims.php';
+        break;
+    case '/staffclaimsoverview':
+        require __DIR__ . '/staffclaimsoverview.php';
+        break;
+    case '/assignclaims':
+        require __DIR__ . '/assign_claims.php';
+        break;
+    case '/staffassignedclaims':
+        require __DIR__ . '/staffassignedclaims.php';
+        break;
+    case '/acceptclaims':
+        require __DIR__ . '/approve_claim.php';
+        break;
+    case '/rejectclaims':
+        require __DIR__ . '/reject_claim.php';
+        break;
     case '/viewCustomers':
         require __DIR__ . '/viewCustomers.php';
         break;
@@ -99,9 +115,6 @@ switch ($request) {
         break;
     case '/view_claims':
         require __DIR__ . '/viewclaims.php';
-        break;
-    case '/create_delete_user_account':
-        require __DIR__ . '/create_delete_user_account.php';
         break;
     default:
         require __DIR__ . '/404.php';

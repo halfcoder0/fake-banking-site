@@ -10,6 +10,7 @@ class admin_controller
             SQL;
 
         $result = DBController::exec_statement($select_query)->fetch();
+        filter_var_array($result, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
         return $result;
     }

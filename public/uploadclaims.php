@@ -16,11 +16,11 @@ try {
 
   upload_img($error, $success);
 } catch (Exception $exception) {
+  $error = "Error with page";
   error_log($exception->getMessage() . $exception->getTraceAsString());
-  redirect_500();
 } catch (Throwable $throwable) {
+  $error = "Error with page";
   error_log($throwable->getMessage() . $throwable->getTraceAsString());
-  redirect_500();
 }
 
 function upload_img(&$error, &$success)
@@ -40,7 +40,7 @@ function upload_img(&$error, &$success)
   // Store outside webroot for safety; ensure this directory exists and is readable by PHP
   $storageRoot = __DIR__ . '/assets/images/uploads/claims/';
   if (!is_dir($storageRoot)) {
-    @mkdir($storageRoot, 0777, true);
+    @mkdir($storageRoot, 0666, true);
   }
 
   $desc = trim($_POST['description'] ?? '');

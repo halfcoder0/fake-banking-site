@@ -11,12 +11,8 @@ try {
     $auth_controller = new AuthController();
     $auth_controller->check_user_role([Roles::USER]);
     $msg = "";
-} catch (Exception $exception) {
-    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
-    redirect_500();
-} catch (Throwable $throwable) {
-    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
-    redirect_500();
+} catch (Exception $e) {
+    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
 }
 
 // Create account when customer submit account type to be created
@@ -33,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete']) && csrf_veri
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html dir="ltr" lang="en">
 
 <head>
     <meta charset="utf-8">
