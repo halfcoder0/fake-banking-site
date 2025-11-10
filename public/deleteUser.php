@@ -1,10 +1,16 @@
 <?php
 require_once('../controllers/security/session_bootstrap.php');
-$staffid = $_SESSION['StaffID'] ?? null;
-$role = $_SESSION['Role'] ?? null;
-if ($staffid === '') {
-  header('Location: /login');
-  exit;
+require_once('../controllers/auth.php');
+
+try {
+  $auth_controller = new AuthController();
+  $auth_controller->check_user_role([Roles::STAFF]);
+} catch (Exception $exception) {
+  $error = "Error with page";
+  error_log($exception->getMessage() . $exception->getTraceAsString());
+} catch (Throwable $throwable) {
+  $error = "Error with page";
+  error_log($throwable->getMessage() . $throwable->getTraceAsString());
 }
 
 // Handle delete request
@@ -33,20 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           echo "<script>alert('successfully delete the customer);
           window.location.href = '/viewCustomers';
           </script>";
-        exit;
     } catch (Exception $e) {
         $pdo->rollBack();
         // log error if needed
         echo "<script>alert('Failed to delete user');
         window.location.href = '/viewCustomers';
         </script>";
-        exit;
     }
-
 }
-
-
-
-
-
+exit;
 ?>

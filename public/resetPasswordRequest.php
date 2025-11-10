@@ -1,14 +1,20 @@
 <?php
 require_once('../controllers/security/session_bootstrap.php');
+require_once('../controllers/auth.php');
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-
-$StaffID = $_SESSION['StaffID'] ?? null;
-//Check if this request from a legitimate staff
-if ($StaffID === '') {
-    header('Location: /login');
-    exit;
+try {
+  $auth_controller = new AuthController();
+  $auth_controller->check_user_role([Roles::STAFF]);
+} catch (Exception $exception) {
+  $error = "Error with page";
+  error_log($exception->getMessage() . $exception->getTraceAsString());
+} catch (Throwable $throwable) {
+  $error = "Error with page";
+  error_log($throwable->getMessage() . $throwable->getTraceAsString());
 }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['customer_id'])) {
     $userId = $_POST['customer_id'];
     // 1. Generate secure random password
@@ -46,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['customer_id'])) {
         $customerEmail = $row['Email'];
         // 5. Send email
         $mail = new PHPMailer(true);
-        error_log("Sending email");
         try {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';

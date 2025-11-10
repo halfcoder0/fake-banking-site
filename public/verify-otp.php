@@ -2,8 +2,6 @@
 require_once('../controllers/security/session_bootstrap.php');
 require('../controllers/auth.php');
 
-$error = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp = trim($_POST['otp']);
     $userId = $_SESSION['pending_user'] ?? null;

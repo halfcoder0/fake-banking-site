@@ -22,6 +22,21 @@ if (isset($_POST['submit'])) {
         exit;
     }
 
+    // Validate contact number length
+    if (strlen($contactNo) > 8) {
+        echo "<script>alert('Contact number must not exceed 8 digits.');</script>";
+        echo "<script>window.location.href ='register.php'</script>";
+        exit;
+    }
+
+    // Optional: ensure only digits
+    if (!ctype_digit($contactNo)) {
+        echo "<script>alert('Contact number must contain only digits.');</script>";
+        echo "<script>window.location.href ='register.php'</script>";
+        exit;
+    }
+
+
     // Hash password securely
     $hashedPassword = password_hash($password, PASSWORD_ARGON2ID);
     $role = 'USER';
@@ -47,6 +62,7 @@ if (isset($_POST['submit'])) {
             [':password', $hashedPassword, PDO::PARAM_STR],
             [':role', $role, PDO::PARAM_STR]
         ]);
+
 
         // Insert into Customer
         $customerId = DBController::$pdo->query("SELECT gen_random_uuid()")->fetchColumn();
@@ -139,11 +155,18 @@ if (isset($_POST['submit'])) {
                   <input type="date" name="dob" class="form-control form-control-lg" required>
                 </div>
 
+
                 <!-- Contact Number -->
                 <div class="input-group mb-3">
                   <div class="input-group-prepend"><span class="input-group-text"><i class="ti-mobile"></i></span></div>
-                  <input type="text" name="contactno" class="form-control form-control-lg" placeholder="Contact Number" required>
+                  <input type="text" name="contactno"
+                         class="form-control form-control-lg"
+                         placeholder="Contact Number"
+                         maxlength="8"
+                         pattern="\d{1,8}"
+                         required>
                 </div>
+
 
                 <!-- Email -->
                 <div class="input-group mb-3">
