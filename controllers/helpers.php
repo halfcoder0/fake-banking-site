@@ -138,7 +138,7 @@ if (!function_exists('check_for_non_alphanum')) {
      */
     function check_for_non_alphanum($string)
     {
-        return preg_match("/[^[:alnum:]]/u", $string);
+        return preg_match("/[^[:alnum:][:space:]]/u", $string);
     }
 }
 
@@ -225,20 +225,7 @@ if (!function_exists('redirect_404')) {
     function redirect_404()
     {
         http_response_code(404);
-        require_once __DIR__ . '/../public/404.php';
+        require_once '__DIR__' . '/../public/404.php';
         exit;
-    }
-}
-
-if (!function_exists('is_valid_uuid')) {
-    /**
-     * Check if string is a UUID string
-     */
-    function is_valid_uuid(string $uuid): bool
-    {
-        return (bool) preg_match(
-            '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/',
-            $uuid
-        );
     }
 }

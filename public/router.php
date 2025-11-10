@@ -51,19 +51,6 @@ switch ($request) {
         break;
     case '/listclaims':
         require __DIR__ . '/viewclaims.php';
-    case '/transactions':
-        require __DIR__ . $controllers . '/api/transactions.php';
-        break;
-    case '/balances':
-        require __DIR__ . $controllers . '/api/balances.php';
-        break;
-    case '/profile':
-        require __DIR__ . '/profile.php';
-    case '/admin_controller':
-        require __DIR__ . '/../controllers/admin_controller.php';
-        break;
-    case '/accounts':
-        require __DIR__ . $controllers . '/api/accounts.php';
         break;
     case '/deleteclaims':
         require __DIR__ . '/deleteclaims.php';
@@ -92,30 +79,7 @@ switch ($request) {
     case '/resetPasswordRequest':
         require __DIR__ . '/resetPasswordRequest.php';
         break;
-    case '/approve_claim':
-        require __DIR__ . '/approve_claim.php';
-        break;
-    case '/assign_claims':
-        require __DIR__ . '/assign_claims.php';
-        break;
-    case '/delete_claims':
-        require __DIR__ . '/deleteclaims.php';
-        break;
-    case '/reject_claim':
-        require __DIR__ . '/reject_claim.php';
-        break;
-    case '/staff/assigned_claims':
-        require __DIR__ . '/staffassignedclaims.php';
-        break;
-    case '/staff/claims_overview':
-        require __DIR__ . '/staffclaimsoverview.php';
-        break;
-    case '/upload_claims':
-        require __DIR__ . '/uploadclaims.php';
-        break;
-    case '/view_claims':
-        require __DIR__ . '/viewclaims.php';
-        break;
+
     default:
         require __DIR__ . '/404.php';
 }

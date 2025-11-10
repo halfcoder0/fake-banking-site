@@ -45,16 +45,9 @@ function csrf_verify(int $max_age = 7200): bool
         if ($ref !== $_SERVER['HTTP_HOST']) return false;
     }
 
-    $token = trim($_POST['csrf_token']) ?? '';
-    $session_token = $_SESSION['csrf_token'] ?? '';
+    $token = $_POST['csrf_token'] ?? '';
 
-    if ($session_token === ''){
-        error_log("No CSRF token in session");
-        return false;
-    }
-    if ($token === '') return false;
-
-    if (hash_equals($session_token, $token)) return true;
+    if (is_string($token) && hash_equals($_SESSION['csrf_token'], $token)) return true;
 
     return false;
 }
