@@ -1,8 +1,8 @@
 version: 2
 updates:
-  # Keep GitHub Actions up to date (checkout, setup-node, etc.)
+  # 1. GitHub Actions dependencies (checkout, setup-node, ssh-agent, etc.)
   - package-ecosystem: "github-actions"
-    directory: "/public"
+    directory: "/"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
@@ -10,38 +10,38 @@ updates:
     commit-message:
       prefix: "deps(actions)"
 
-  # # NPM/Node deps (for ESLint + plugins)
+  # # 2. Node.js / ESLint / frontend JS dependencies
   # - package-ecosystem: "npm"
   #   directory: "/"
   #   schedule:
-  #     interval: "weekly"
-  #     day: "sunday"
-  #     time: "03:10"
-  #     timezone: "Asia/Singapore"
+  #     interval: "daily"
   #   open-pull-requests-limit: 10
   #   labels: ["deps", "npm"]
   #   commit-message:
   #     prefix: "deps(npm)"
-  #   # Group common lint deps so you don't get spammed
   #   groups:
-  #     eslint-family-minor-patch:
+  #     eslint-packages:
   #       patterns:
   #         - "eslint"
   #         - "@eslint/*"
-  #         - "eslint-plugin-*"
+  #         - "eslint-*"
   #         - "@microsoft/eslint-formatter-sarif"
-  #       update-types: ["minor", "patch"]
 
-  
+  # 3. PHP / Composer dependencies
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["deps", "composer"]
+    commit-message:
+      prefix: "deps(composer)"
 
-  # Dockerfile (enable if you have a Dockerfile in repo root)
+  # 4. Dockerfile base image updates
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:30"
-      timezone: "Asia/Singapore"
+      interval: "daily"
     open-pull-requests-limit: 5
     labels: ["deps", "docker"]
     commit-message:
