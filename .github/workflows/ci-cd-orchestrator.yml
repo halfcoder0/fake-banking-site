@@ -6,31 +6,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  # dependency-check:
-  #   name: OWASP Dependency Check
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v5
+  dependency-check:
+    name: OWASP Dependency Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
 
-  #     - name: Run OWASP Dependency Check
-  #       uses: dependency-check/Dependency-Check_Action@main
-  #       with:
-  #         project: "fake-banking-site"
-  #         path: "."
-  #         format: "HTML"
-  #         out: "dependency-check-report"
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "fake-banking-site"
+          path: "."
+          format: "HTML"
+          out: "dependency-check-report"
 
-  #     - name: Upload OWASP report
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: dependency-check-report
-  #         path: dependency-check-report
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report
 
   eslint:
     name: ESLint Static Code Analysis
     runs-on: ubuntu-latest
-    #needs: dependency-check
 
     permissions:
       contents: read
@@ -63,11 +62,98 @@ jobs:
         with:
           sarif_file: eslint-results.sarif
 
+  analyze:
+    name: Analyze Code with CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+
+    env:
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_DB: nexabank_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: P@ssw0rd
+      POSTGRES_DB_PORT: 5432
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: P@ssw0rd
+          POSTGRES_DB: nexabank_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -h 127.0.0.1 -U admin -d nexabank_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, pgsql
+          coverage: none
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..20}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U admin && break
+            echo "Waiting for PostgreSQL... ($i)"
+            sleep 3
+          done
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Debug composer and phpunit
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -al
+          find . -name phpunit
+
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit
+
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-   # needs: [eslint]
+    needs: [dependency-check, eslint, analyze, phpunit] # run only after all succeed
     if: ${{ success() }}
+
     steps:
       - name: Start ssh-agent
         uses: webfactory/ssh-agent@v0.9.0
