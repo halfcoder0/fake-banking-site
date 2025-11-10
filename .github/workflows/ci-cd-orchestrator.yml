@@ -30,7 +30,7 @@ jobs:
   eslint:
     name: ESLint Static Code Analysis
     runs-on: ubuntu-latest
-    needs: dependency-check
+    #needs: dependency-check
 
     permissions:
       contents: read
