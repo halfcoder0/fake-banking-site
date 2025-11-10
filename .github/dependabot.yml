@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date (checkout, setup-node, etc.)
+  - package-ecosystem: "github-actions"
+    directory: "/public"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["deps", "github-actions"]
+    commit-message:
+      prefix: "deps(actions)"
+
+  # # NPM/Node deps (for ESLint + plugins)
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "sunday"
+  #     time: "03:10"
+  #     timezone: "Asia/Singapore"
+  #   open-pull-requests-limit: 10
+  #   labels: ["deps", "npm"]
+  #   commit-message:
+  #     prefix: "deps(npm)"
+  #   # Group common lint deps so you don't get spammed
+  #   groups:
+  #     eslint-family-minor-patch:
+  #       patterns:
+  #         - "eslint"
+  #         - "@eslint/*"
+  #         - "eslint-plugin-*"
+  #         - "@microsoft/eslint-formatter-sarif"
+  #       update-types: ["minor", "patch"]
+
+  
+
+  # Dockerfile (enable if you have a Dockerfile in repo root)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "03:30"
+      timezone: "Asia/Singapore"
+    open-pull-requests-limit: 5
+    labels: ["deps", "docker"]
+    commit-message:
+      prefix: "deps(docker)"
