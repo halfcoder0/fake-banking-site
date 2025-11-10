@@ -22,7 +22,7 @@ jobs:
           out: "dependency-check-report"
 
       - name: Upload OWASP report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dependency-check-report
           path: dependency-check-report
@@ -52,7 +52,7 @@ jobs:
         run: npx eslint . --format=@microsoft/eslint-formatter-sarif --output-file eslint-results.sarif || true
 
       - name: Upload ESLint SARIF Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: eslint-sarif-report
           path: eslint-results.sarif
