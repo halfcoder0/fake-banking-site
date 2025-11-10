@@ -40,11 +40,10 @@ CREATE TABLE IF NOT EXISTS public."Customer"
 CREATE TABLE IF NOT EXISTS public."LoginHistory"
 (
     "RecordID" uuid NOT NULL,
-    "SessionID" uuid NOT NULL,
     "UserID" uuid NOT NULL,
     "LastLogged" timestamp with time zone NOT NULL,
+    "SessionID" character varying(255) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "LoginHistory_pkey" PRIMARY KEY ("RecordID"),
-    CONSTRAINT "LoginHistory_SessionID_key" UNIQUE ("SessionID"),
     CONSTRAINT "LoginHistory_UserID_key" UNIQUE ("UserID")
 );
 
@@ -128,16 +127,6 @@ ALTER TABLE IF EXISTS public."Customer"
     NOT VALID;
 CREATE INDEX IF NOT EXISTS "Customer_UserID_key"
     ON public."Customer"("UserID");
-
-
-ALTER TABLE IF EXISTS public."LoginHistory"
-    ADD CONSTRAINT "LoginHistory_SessionID_fkey" FOREIGN KEY ("SessionID")
-    REFERENCES public."Session" ("SessionID") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS "LoginHistory_SessionID_key"
-    ON public."LoginHistory"("SessionID");
 
 
 ALTER TABLE IF EXISTS public."LoginHistory"
