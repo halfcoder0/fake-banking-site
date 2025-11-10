@@ -1,6 +1,7 @@
 # fake-banking-site | Nexabank
 
 Nexabank - A fake banking site for SIT - ICT2216
+https://nexabank.publicvm.com/
 
 ## Setup
 
