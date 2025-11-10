@@ -5,11 +5,6 @@ require_once __DIR__ . '/../../controllers/admin_controller.php';
 
 class ExampleTest extends TestCase
 {
-    public function testTrueIsTrue(): void
-    {
-        // Simple assertion to ensure PHPUnit is working
-        $this->assertTrue(true);
-    }
 
 public function testIsValidUuid(): void
     {
@@ -42,5 +37,11 @@ public function testIsValidUuid(): void
         foreach ($invalid_uuids as $uuid) {
             $this->assertFalse($method->invoke(null, $uuid), "Failed asserting that '$uuid' is invalid.");
         }
+    }
+
+        public function testTrueIsTrue(): void
+    {
+        // Simple assertion to ensure PHPUnit is working
+        $this->assertTrue(true);
     }
 }
