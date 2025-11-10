@@ -66,6 +66,18 @@ $baseUrl = '/assets/images/uploads/claims/';
       <a href="/upload_claims"  class="btn btn-primary mb-3">
         Submit new Claims
       </a>
+      <a href="/dashboard"  class="btn btn-primary mb-3">
+        Dashboard
+      </a>
+      <a href="/transfer"  class="btn btn-primary mb-3">
+        Transfer
+      </a>
+      <a href="/profile"  class="btn btn-primary mb-3">
+        Profile
+      </a>
+      <a href="/logout"  class="btn btn-primary mb-3">
+        Logout
+      </a>
     </div>
     <div class="accordion" id="claimsAccordion">
       <?php foreach ($claims as $index => $claim): ?>
