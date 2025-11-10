@@ -20,11 +20,11 @@ try {
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["Withdraw"]) && csrf_verify())
         $transfer_controller->process_withdraw_request($own_accounts);
 } catch (Exception $exception) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
     error_log($exception->getMessage() . $exception->getTraceAsString());
+    redirect_500();
 } catch (Throwable $throwable) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
     error_log($throwable->getMessage() . $throwable->getTraceAsString());
+    redirect_500();
 }
 
 ?>

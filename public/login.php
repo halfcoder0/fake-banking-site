@@ -11,14 +11,13 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['logi
         $auth_controller->attempt_auth($_POST);
     } catch (Exception $exception) {
         $_SESSION["error"] = "Error logging in.";
-        error_log($exception->getMessage());
+        error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
         header("Location: /login");
     } catch (Throwable $thowable) {
         $_SESSION["error"] = "Error logging in.";
-        error_log($thowable->getMessage());
+        error_log($thowable->getMessage() . "\n" . $thowable->getTraceAsString());
         header("Location: /login");
     }
-
     exit;
 }
 
@@ -96,15 +95,6 @@ if (isset($_SESSION['UserID']) && isset($_SESSION["Role"])){
                                     </div>
                                     <input name="password" type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" required>
                                 </div>
-                                <!-- TO BE IMPLEMENTED <div class="form-group row">
-                                    <div class="col-md-12">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="customCheck1">
-                                            <label class="custom-control-label" for="customCheck1">Remember me</label>
-                                            <a href="" id="to-recover" class="text-dark float-right"><i class="fa fa-lock m-r-5"></i> Forgot pwd?</a>
-                                        </div>
-                                    </div>
-                                </div> -->
                                 <div class="form-group text-center">
                                     <div class="col-xs-12 p-b-20">
                                         <button class="btn btn-block btn-lg btn-info" type="submit" name="login" value="login">Log In</button>

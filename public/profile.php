@@ -59,13 +59,12 @@ try {
     // Load & clear flash message
     $flash = $_SESSION['flash'] ?? null;
     unset($_SESSION['flash']);
-
-} catch (Exception $e) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($e->getMessage() . $e->getTraceAsString());
-} catch (Throwable $t) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($t->getMessage() . $t->getTraceAsString());
+} catch (Exception $exception) {
+    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+    redirect_500();
+} catch (Throwable $throwable) {
+    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+    redirect_500();
 }
 ?>
 

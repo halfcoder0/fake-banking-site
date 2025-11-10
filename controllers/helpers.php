@@ -242,3 +242,36 @@ if (!function_exists('is_valid_uuid')) {
         );
     }
 }
+
+if (!function_exists('redirect_500')) {
+    /**
+     * Sends HTTP response code 404 & displays 404 page
+     */
+    function redirect_500()
+    {
+        http_response_code(500);
+        require_once __DIR__ . '/../public/500.php';
+        exit;
+    }
+}
+
+if (!function_exists("is_valid_username")){
+    /**
+     * Check if username is valid
+     */
+    function is_valid_username(string $username){
+        $username_regex = ["options" => ["regexp" => "/^[A-Za-z0-9]+$/"]];
+
+        return filter_var($username, FILTER_VALIDATE_REGEXP, $username_regex);
+    }
+}
+
+if (!function_exists("is_valid_name")){
+    /**
+     * Check if string contains only alphabet & space
+     */
+    function is_valid_name(string $username){
+        $alphabet_regex = ["options" => ["regexp" => "/^[A-Za-z ]+$/"]];
+        return filter_var($username, FILTER_VALIDATE_REGEXP, $alphabet_regex);
+    }
+}

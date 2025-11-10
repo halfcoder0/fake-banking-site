@@ -1,24 +1,17 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
-require_once __DIR__ .'/../controllers/helpers.php';
-require_once __DIR__ .'/../controllers/enum.php';
-require("../controllers/security/session_bootstrap.php");
+require_once __DIR__ . '/../controllers/security/session_bootstrap.php';
+require_once __DIR__ . '/../controllers/helpers.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
-$request = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
+$request = $_SERVER['REQUEST_URI'];
 $controllers = '/../controllers/';
 
 DBController::init_db();
-
-if ($request !== '/' && str_ends_with($request, '.php')) {
-    http_response_code(404);
-    require __DIR__ . '/404.php';
-    exit;
-}
 
 switch ($request) {
     case '':
@@ -27,6 +20,9 @@ switch ($request) {
         break;
     case '/login':
         require __DIR__ . '/login.php';
+        break;
+    case '/auth/login':
+        require __DIR__ . $controllers . 'auth.php';
         break;
     case '/dashboard':
         require __DIR__ . '/dashboard.php';
@@ -37,11 +33,8 @@ switch ($request) {
     case '/register':
         require __DIR__ . '/register.php';
         break;
-    case '/create_staff':
-        require __DIR__ . '/create_staff.php';
-        break;
-    case '/update_staff':
-        require __DIR__ . '/update_staff.php';
+    case '/db':
+        require __DIR__ . '/../includes/dbconnection.php';
         break;
     case '/transfer':
         require __DIR__ . '/transfer.php';
@@ -52,6 +45,14 @@ switch ($request) {
     case '/admin-dashboard':
         require __DIR__ . '/admin_dashboard.php';
         break;
+    case '/otp':
+        require __DIR__ . '/verify-otp.php';
+        break;
+    case '/uploadclaims':
+        require __DIR__ . '/uploadclaims.php';
+        break;
+    case '/listclaims':
+        require __DIR__ . '/viewclaims.php';
     case '/transactions':
         require __DIR__ . $controllers . '/api/transactions.php';
         break;
@@ -66,8 +67,14 @@ switch ($request) {
     case '/accounts':
         require __DIR__ . $controllers . '/api/accounts.php';
         break;
-    case '/create_delete_user_account':
-        require __DIR__ . '/create_delete_user_account.php';
+    case '/viewCustomers':
+        require __DIR__ . '/viewCustomers.php';
+        break;
+    case '/deleteUser':
+        require __DIR__ . '/deleteUser.php';
+        break;
+    case '/resetPasswordRequest':
+        require __DIR__ . '/resetPasswordRequest.php';
         break;
     case '/approve_claim':
         require __DIR__ . '/approve_claim.php';
@@ -93,10 +100,11 @@ switch ($request) {
     case '/view_claims':
         require __DIR__ . '/viewclaims.php';
         break;
+    case '/create_delete_user_account':
+        require __DIR__ . '/create_delete_user_account.php';
+        break;
     default:
-        http_response_code(404);
         require __DIR__ . '/404.php';
-        exit;
 }
 
 ?>

@@ -1,44 +1,120 @@
 <?php
+require_once('helpers.php');
+require_once('enum.php');
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 class AuthController
 {
     const MAX_USERNAME_LEN = 50;
     const MAX_PASSWORD_LEN = 100;
 
     /**
-     * Attempt to authenticate user
+     * Validate credentials before sending OTP
      */
     public function attempt_auth(array $creds)
     {
         if (!csrf_verify()) AuthController::return_error('CSRF ERROR');
 
         $username = trim($creds['username'] ?? '');
-        $password  = trim($creds['password'] ?? '');
+        $password = trim($creds['password'] ?? '');
 
-        if (strlen($username) > AuthController::MAX_USERNAME_LEN) AuthController::return_error('Invalid username/password.');
-        if (strlen($password) > AuthController::MAX_PASSWORD_LEN) AuthController::return_error('Invalid username/password.');
-        if (check_for_non_alphanum($username)) AuthController::return_error('Only alphabets & numbers allowed for username.');
-        if ($username === '' || $password === '') AuthController::return_error('Invalid username/password.');
+        if (is_valid_username($username) === false)
+            AuthController::return_error('Invalid username/password.');
 
         $user_hash = AuthController::retrieve_hash($username);
-
-        if ($user_hash === null) AuthController::return_error('Invalid username/password.');
-        if (!password_verify($password, $user_hash)) AuthController::return_error('Invalid username/password.');
+        if ($user_hash === null || !password_verify($password, $user_hash)) {
+            AuthController::return_error('Invalid username/password.');
+        }
 
         $user_data = AuthController::get_user_info($username);
-
         if ($user_data === false) AuthController::return_error('Error retrieving user.');
 
-        $role = $user_data["Role"];
-        hard_recreate_session();
+        AuthController::generate_otp($user_data);
+    }
 
-        $_SESSION["UserID"] = $user_data["UserID"];
-        $_SESSION["Role"] = $user_data["Role"];
+    /**
+     * Generate OTP & redirect to OTP page
+     */
+    private function generate_otp($user_data)
+    {
+        //Generate OTP
+        $otp = random_int(100000, 999999);
+        $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-        AuthController::handle_different_roles($user_data);
+        $insertOtp = <<<SQL
+          INSERT INTO "UserOTP" ("UserID", "Code", "ExpiresAt")
+          VALUES (:uid, :code, :exp)
+          ON CONFLICT ("UserID") DO UPDATE
+          SET "Code" = EXCLUDED."Code", "ExpiresAt" = EXCLUDED."ExpiresAt";
+        SQL;
 
-        AuthController::update_login_time($username);
-        error_log(json_encode($_SESSION));
-        AuthController::redirect_user($role);
+        DBController::exec_statement($insertOtp, [
+            [':uid', $user_data['UserID'], PDO::PARAM_STR],
+            [':code', $otp, PDO::PARAM_STR],
+            [':exp', $expiry, PDO::PARAM_STR]
+        ]);
+
+        switch (Roles::tryFrom($user_data['Role'])){
+            case Roles::USER:
+                $query = <<<SQL
+                    SELECT "Email" FROM "Customer" WHERE "UserID" = :uid;
+                SQL;
+                break;
+            case Roles::STAFF:
+                $query = <<<SQL
+                    SELECT "Email" FROM "Staff" WHERE "UserID" = :uid;
+                SQL;
+                break;
+            case Roles::ADMIN:
+                $query = <<<SQL
+                    SELECT "Email" FROM "Staff" WHERE "UserID" = :uid;
+                SQL;
+                break;
+            case Roles:: DELETED:
+                AuthController::return_error('Invalid username/password.');
+                break;
+            default:
+                AuthController::return_error('Error with login.');
+                break;
+        }
+
+        $params = [[':uid', $user_data['UserID'], PDO::PARAM_STR]];
+        $stmt = DBController::exec_statement($query, $params);
+        
+        $row = $stmt->fetch();
+        $email = $row['Email'];
+
+        // $mail = new PHPMailer(true);
+        // try {
+        //     $mail->isSMTP();
+        //     $mail->Host       = 'smtp.gmail.com';
+        //     $mail->SMTPAuth   = true;
+        //     $mail->Username   = $_ENV['SMTP_USER'];         // your Gmail
+        //     $mail->Password   = $_ENV['SMTP_PASS'];        // 16-char App Password
+        //     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        //     $mail->Port       = 587;
+
+        //     $mail->setFrom('nexabanksit@gmail.com', 'Nexabank');
+        //     $mail->addAddress($email);         // send to user’s email
+
+        //     $mail->isHTML(true);
+        //     $mail->Subject = 'Your Nexabank OTP Code';
+        //     $mail->Body    = "Your OTP is <b>{$otp}</b>. It will expire in 5 minutes.";
+        //     $mail->AltBody = "Your OTP is {$otp}. It will expire in 5 minutes.";
+
+        //     $mail->send();
+        // } catch (Exception $e) {
+        //     error_log("Mailer Error: {$mail->ErrorInfo}");
+        //     AuthController::return_error('Unable to send OTP email.');
+        // }
+
+        $_SESSION['pending_user'] = $user_data['UserID'];
+        $_SESSION['pending_role'] = $user_data['Role'];
+
+        header("Location: /otp");
+        exit;
     }
 
     /**
@@ -48,12 +124,15 @@ class AuthController
     {
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
+                error_log("user page");
                 header('Location: /dashboard');
                 exit;
             case Roles::STAFF:
-                header('Location: /staff-dashboard');
+                error_log("staff page");
+                header('Location: /viewCustomers');
                 exit;
             case Roles::ADMIN:
+                error_log("admin page");
                 header('Location: /admin-dashboard');
                 exit;
         }
@@ -65,17 +144,21 @@ class AuthController
     /**
      * Update user login time
      */
-    private function update_login_time(string $username)
+    private function update_login_time()
     {
+        $userID = $_SESSION["UserID"] ?? '';
+        if ($userID === '')
+            AuthController::return_error('Error with login');
+
         $update_query = '
             UPDATE public."User"
             SET "LastLogin" = :lastLogin
-            WHERE "Username" = :username;';
+            WHERE "UserID" = :userID;';
         $now = new DateTime();
         $now = $now->format('Y-m-d H:i:s');
 
         $params = array(
-            [':username', $username, PDO::PARAM_STR],
+            [':userID', $userID, PDO::PARAM_STR],
             [':lastLogin', $now, PDO::PARAM_STR]
         );
         $success = DBController::exec_statement($update_query, $params);
@@ -111,11 +194,15 @@ class AuthController
         SELECT "Password"
             FROM public."User"
             WHERE
-                "Username" = :username
+                "Username" = :username 
+                AND NOT "Role" = :deleted
             LIMIT 1;
         SQL;
 
-        $params = array([':username', $username, PDO::PARAM_STR]);
+        $params = [
+            [':username', $username, PDO::PARAM_STR],
+            [':deleted', Roles::DELETED->value, PDO::PARAM_STR]
+        ];
         $result = DBController::exec_statement($query, $params)->fetch();
 
         if ($result === false) return null;
@@ -136,10 +223,15 @@ class AuthController
     /**
      * Get & Set role-specific info
      */
-    private function handle_different_roles(array $user_data)
+    public function handle_different_roles(array $user_data)
     {
         $user_id = $user_data["UserID"];
         $role = $user_data["Role"];
+
+        hard_recreate_session();
+
+        $_SESSION["Role"] = $role;
+        $_SESSION["UserID"] = $user_id;
 
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
@@ -155,6 +247,9 @@ class AuthController
                 error_log("Unknown role {$role} for user {$user_id}");
                 throw new Exception("Error with user info.");
         }
+
+        AuthController::update_login_time();
+        AuthController::redirect_user($role);
     }
 
     /**
@@ -204,7 +299,7 @@ class AuthController
     {
         if (!isset($_SESSION['Role'])) {
             error_log('No role found in session, likely not logged in.');
-            header('Location: /logout');
+            redirect_404();
         }
 
         $user_role = Roles::tryFrom($_SESSION['Role']);
