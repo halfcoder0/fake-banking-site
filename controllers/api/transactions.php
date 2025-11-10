@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../TransactionController.php';
 
 try {
-    if (empty($_SESSION['UserID']) || empty($_SESSION['CustomerID']) || $_SERVER["REQUEST_METHOD"] !== "POST" || !isset($_POST["GetTransactions"])) {
+    if (empty($_SESSION['UserID']) || empty($_SESSION['CustomerID']) || $_SERVER["REQUEST_METHOD"] !== "POST" ) {
         http_response_code(404);
         exit;
     }
