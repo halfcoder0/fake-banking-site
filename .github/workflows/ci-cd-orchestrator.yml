@@ -1,4 +1,4 @@
-name: CI Orchestrator
+name: CI/CD Orchestrator
 
 on:
   push:
