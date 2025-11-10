@@ -17,4 +17,4 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_HOST }} "mkdir test"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_SSH_KEY}} "mkdir test"
