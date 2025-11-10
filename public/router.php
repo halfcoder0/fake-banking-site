@@ -3,6 +3,7 @@ require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../controllers/db_controller.php';
 require_once __DIR__ . '/../controllers/security/session_bootstrap.php';
 require_once __DIR__ . '/../controllers/helpers.php';
+require_once __DIR__ . '/../controllers/enum.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
@@ -102,6 +103,12 @@ switch ($request) {
         break;
     case '/create_delete_user_account':
         require __DIR__ . '/create_delete_user_account.php';
+        break;
+    case '/create_staff':
+        require __DIR__ . '/create_staff.php';
+        break;
+    case '/update_staff':
+        require __DIR__ . '/update_staff.php';
         break;
     default:
         require __DIR__ . '/404.php';
