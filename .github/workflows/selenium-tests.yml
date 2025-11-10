@@ -2,11 +2,7 @@ name: Node.js Selenium Testing
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: ["Alfred-Test-CI/CD"]
 
 jobs:
   build:
