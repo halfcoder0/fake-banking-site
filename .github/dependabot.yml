@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -10,20 +9,6 @@ updates:
     commit-message:
       prefix: "deps(actions)"
 
-  # Docker 
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:30"
-      timezone: "Asia/Singapore"
-    open-pull-requests-limit: 5
-    labels: ["deps", "docker"]
-    commit-message:
-      prefix: "deps(docker)"
-
-  # NPM
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -32,3 +17,8 @@ updates:
     labels: ["deps", "npm"]
     commit-message:
       prefix: "deps(npm)"
+      
+  - package-ecosystem: "composer"
+    directory: "/" 
+    schedule:
+      interval: "daily"
