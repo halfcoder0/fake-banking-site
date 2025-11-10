@@ -14,11 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['claim_id'])) {
         return;
     }
     if ($claimId === '' || $userid === ''){
-        error_log("Reject Claims: ClaimID or StaffID is empty");
+        error_log("Delete Claims: ClaimID or StaffID is empty");
         return;
     }
     if (!is_valid_uuid($claimId)){
-        error_log("Reject Claims: Invalid claimID");
+        error_log("Delete Claims: Invalid claimID");
         return;
     }
 

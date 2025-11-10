@@ -1,31 +1,35 @@
 <?php
+require_once('../controllers/security/session_bootstrap.php');
 require_once('../controllers/auth.php');
-require_once('../controllers/security/csrf.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$auth_controller = new AuthController();
-$auth_controller->check_user_role([Roles::STAFF]);
+$userid = $_SESSION['UserID'] ?? null;
+$role   = $_SESSION['Role'] ?? null;
 
-$staffID = $_SESSION['StaffID'] ?? '';
+try {
+    $auth_controller = new AuthController();
+    $auth_controller->check_user_role([Roles::STAFF]);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_id'])) {
-    $claimId = trim($_POST['claim_id']) ?? '';
-
-    if (!csrf_verify()) {
-        error_log("Invalid CSRF");
-        return;
-    }
-    if ($claimId === '' || $staffID === '') {
-        error_log("Reject Claims: ClaimID or StaffID is empty");
-        return;
-    }
-    if (!is_valid_uuid($claimId)) {
-        error_log("Reject Claims: Invalid claimID");
-        return;
-    }
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['claim_id']))
+        redirect_404();
     
+    reject_claim();
+} catch (Exception $exception) {
+    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+    redirect_500();
+} catch (Throwable $throwable) {
+    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+    redirect_500();
+}
+
+function reject_claim()
+{
+    $staffID = $_SESSION['StaffID'] ?? '';
+
+    $claimId = $_POST['claim_id'];
+
     // First, fetch the image path so we can remove the file from storage
     $selectQuery = <<<SQL
         SELECT "ImagePath","CustomerID"
@@ -65,10 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_id'])) {
 
             // Now delete the claim record
             $deleteQuery = <<<SQL
-                DELETE FROM "Claims"
-                WHERE "ClaimID" = :cid
-                AND "ManagedBy" = :sid;
-            SQL;
+            DELETE FROM "Claims"
+            WHERE "ClaimID" = :cid
+            AND "ManagedBy" = :sid;
+        SQL;
 
             DBController::exec_statement($deleteQuery, [
                 [':cid', $claimId, PDO::PARAM_STR],
@@ -95,15 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_id'])) {
                 $mail->send();
             } catch (Exception $e) {
                 error_log("Mailer Error: {$mail->ErrorInfo}");
-                $_SESSION[SessionVariables::GENERIC_ERROR->value]('Unable to send OTP email.');
+                $error = 'Unable to send OTP email.';
             }
         } else {
-            error_log("no row found.");
             $error = "Error";
             exit;
         }
     }
 }
+
 
 header('Location: /staff/assigned_claims');
 exit;

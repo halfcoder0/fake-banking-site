@@ -13,11 +13,11 @@ try {
 
   $claims = get_assigned_claims();
 } catch (Exception $exception) {
-  $error = "Error with page";
-  error_log($exception->getMessage() . $exception->getTraceAsString());
+  error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+  redirect_500();
 } catch (Throwable $throwable) {
-  $error = "Error with page";
-  error_log($throwable->getMessage() . $throwable->getTraceAsString());
+  error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+  redirect_500();
 }
 
 function get_assigned_claims()
@@ -57,7 +57,12 @@ SQL;
 <body>
   <div class="container mt-5">
     <h2 class="mb-4">My Assigned Claims</h2>
-
+    <a href="/staff/claims_overview" class="btn btn-primary mb-3">
+      Back
+    </a>
+    <a href="/viewCustomers" class="btn btn-primary mb-3">
+      Back to Main
+    </a>
     <div class="accordion" id="claimsAccordion">
       <?php foreach ($claims as $index => $claim): ?>
         <div class="accordion-item">

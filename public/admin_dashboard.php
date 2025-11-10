@@ -14,11 +14,11 @@ try {
     $controller = new admin_controller();
     $stats = $controller->getUserStats();
 } catch (Exception $exception) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($exception->getMessage() . $exception->getTraceAsString());
+    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+    redirect_500();
 } catch (Throwable $throwable) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($throwable->getMessage() . $throwable->getTraceAsString());
+    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+    redirect_500();
 }
 
 ?>

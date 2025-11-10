@@ -4,10 +4,10 @@ use GrahamCampbell\ResultType\Error;
 
 /**
  * **Database Controller** \
- * Initialize & store PDO 
- * 
+ * Initialize & store PDO
+ *
  * Helper functions:
- * - exec_statement($query,$params) 
+ * - exec_statement($query,$params)
  */
 class DBController
 {
@@ -45,23 +45,28 @@ class DBController
      * Usage: exec_statement($query, array([ $param_name, value, PDO type ]) ) \
      * Example: exec_statement($query,array([':username', $username, PDO::PARAM_STR]))
      */
-    public static function exec_statement(string $query,array $params = []): bool|PDOStatement
+    public static function exec_statement(string $query, array $params = []): bool|PDOStatement
     {
         if (DBController::$pdo === NULL) {
-            error_log("PDO is null, DB not initialized!");
+            error_log("[DB ERROR] PDO is null, DB not initialized!");
             throw new Exception("Error obtaining data.");
         }
 
-        $stmt = DBController::$pdo->prepare($query);
-        $num_params = count($params);
+        try {
+            error_log("[DB] SQL: " . $query);
+            $stmt = DBController::$pdo->prepare($query);
 
-        if ($num_params > 0) 
-            for ($row = 0; $row < $num_params; $row++){
-                $stmt->bindValue($params[$row][0], $params[$row][1], $params[$row][2]);
+            foreach ($params as $p) {
+                $stmt->bindValue($p[0], $p[1], $p[2]);
             }
-            
-        $stmt->execute();
 
-        return $stmt;
+            $stmt->execute();
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log("[DB ERROR] SQL: " . $query);
+            error_log("[DB ERROR] Params: " . print_r($params, true));
+            error_log("[DB ERROR] Message: " . $e->getMessage());
+            throw new Exception("Error obtaining data.");
+        }
     }
 }

@@ -6,6 +6,36 @@
 /*************************************************************************************/
 
 //=============================================//
+//    File export                              //
+//=============================================//
+$('#file_export').DataTable({
+    dom: 'Bfrtip',
+    buttons: [
+        'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
+});
+$('.buttons-copy, .buttons-csv, .buttons-print, .buttons-pdf, .buttons-excel').addClass('btn btn-primary mr-1');
+
+//==================================================//
+//  Show / hide columns dynamically                 //
+//==================================================//
+
+var table = $('#show_hide_col').DataTable({
+    "scrollY": "200px",
+    "paging": false
+});
+
+$('a.toggle-vis').on('click', function(e) {
+    e.preventDefault();
+
+    // Get the column API object
+    /*var column = table.column($(this).attr('data-column'));*/
+    var column = $('#show_hide_col').dataTable().api().column($(this).attr('data-column'));
+    // Toggle the visibility
+    column.visible(!column.visible());
+});
+
+//=============================================//
 //    Column Rendering for Transactions Table  //
 //=============================================//
 $(window).on('load', function () {
@@ -23,7 +53,6 @@ $(window).on('load', function () {
       url: '/transactions',    
       type: 'POST',
       dataSrc: '',
-      data: {'GetTransactions':'GetTransactions'},
      
     },
     columns: [
@@ -72,10 +101,9 @@ $(window).on('load', function () {
   $b.DataTable({
     processing: true,
     ajax: {
-      url: '/balances',  
+      url: '/accounts',  
       type: 'POST',
       dataSrc: '',
-      data: {'GetAccounts':'GetAccounts'},
       
     },
     columns: [
@@ -91,6 +119,8 @@ $(window).on('load', function () {
           return new Intl.NumberFormat('en-SG', { style: 'currency', currency: 'SGD' }).format(numeric);
         }
       }
+      , 
+     
     ],
     order: [[0, 'asc'], [2, 'asc'], [1, 'asc']],
     lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, 'All']],

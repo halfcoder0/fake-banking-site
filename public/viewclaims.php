@@ -11,11 +11,11 @@ try {
 
   $claims = get_claims();
 } catch (Exception $exception) {
-  $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
   error_log($exception->getMessage() . $exception->getTraceAsString());
+  redirect_500();
 } catch (Throwable $throwable) {
-  $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
   error_log($throwable->getMessage() . $throwable->getTraceAsString());
+  redirect_500();
 }
 
 function get_claims()
@@ -63,7 +63,21 @@ $baseUrl = '/assets/images/uploads/claims/';
   <div class="container mt-5">
     <h2 class="mb-4">My Claims</h2>
     <div class="col-sm-12 text-center">
-      <a href="/upload_claims" class="text-info m-l-5"><b>Submit new Claims</b></a>
+      <a href="/upload_claims"  class="btn btn-primary mb-3">
+        Submit new Claims
+      </a>
+      <a href="/dashboard"  class="btn btn-primary mb-3">
+        Dashboard
+      </a>
+      <a href="/transfer"  class="btn btn-primary mb-3">
+        Transfer
+      </a>
+      <a href="/profile"  class="btn btn-primary mb-3">
+        Profile
+      </a>
+      <a href="/logout"  class="btn btn-primary mb-3">
+        Logout
+      </a>
     </div>
     <div class="accordion" id="claimsAccordion">
       <?php foreach ($claims as $index => $claim): ?>
@@ -108,10 +122,11 @@ $baseUrl = '/assets/images/uploads/claims/';
 </body>
 <?php
 if (isset($_SESSION[SessionVariables::GENERIC_ERROR->value])): ?>
-    <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
-        alert("<?= addslashes($_SESSION[SessionVariables::GENERIC_ERROR->value]) ?>");
-    </script>
-    <?php unset($_SESSION[SessionVariables::GENERIC_ERROR->value]); // clear after use 
-    ?>
+  <script nonce="<?= htmlspecialchars($nonce, ENT_QUOTES) ?>">
+    alert("<?= addslashes($_SESSION[SessionVariables::GENERIC_ERROR->value]) ?>");
+  </script>
+  <?php unset($_SESSION[SessionVariables::GENERIC_ERROR->value]); // clear after use
+  ?>
 <?php endif; ?>
+
 </html>
