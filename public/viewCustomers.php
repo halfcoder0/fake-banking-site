@@ -74,7 +74,9 @@ function fetch_customers_data(&$customers)
     <a href="/staff/claims_overview" class="btn btn-primary mb-3">
       Customer's Claims
     </a>
-
+    <a href="/logout" class="btn btn-primary mb-3">
+      Logout
+    </a>
     <div class="accordion" id="customerAccordion">
       <?php foreach ($customers as $index => $cust): ?>
         <div class="accordion-item">
