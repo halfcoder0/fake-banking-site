@@ -101,12 +101,15 @@ class AuthController
     {
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
+                error_log("user page");
                 header('Location: /dashboard');
                 exit;
             case Roles::STAFF:
+                error_log("staff page");
                 header('Location: /viewCustomers');
                 exit;
             case Roles::ADMIN:
+                error_log("admin page");
                 header('Location: /admin-dashboard');
                 exit;
         }
@@ -197,12 +200,15 @@ class AuthController
         switch (Roles::tryFrom($role)) {
             case Roles::USER:
                 AuthController::handle_user($user_id);
+                error_log("user");
                 break;
             case Roles::STAFF:
                 AuthController::handle_staff($user_id);
+                error_log("staff");
                 break;
             case Roles::ADMIN:
-                AuthController::handle_admin($user_id);
+                AuthController::handle_staff($user_id);
+                error_log("staff+");
                 break;
             default:
                 error_log("Unknown role {$role} for user {$user_id}");
@@ -225,9 +231,9 @@ class AuthController
 
         $params = array([':userid', $user_id, PDO::PARAM_STR]);
         $result = DBController::exec_statement($query, $params)->fetch();
+
         $_SESSION["CustomerID"] = $result["CustomerID"];
         $_SESSION["DisplayName"] = $result["DisplayName"];
-        $_SESSION["Role"] = "USER";
     }
 
     /**
@@ -244,27 +250,10 @@ class AuthController
 
         $params = array([':userid', $user_id, PDO::PARAM_STR]);
         $result = DBController::exec_statement($query, $params)->fetch();
+
         $_SESSION["StaffID"] = $result["StaffID"];
         $_SESSION["DisplayName"] = $result["DisplayName"];
-        $_SESSION["Role"] = "STAFF";
     }
-
-    private function handle_admin(string $user_id)
-    {
-        $query = <<<SQL
-            SELECT "StaffID", "DisplayName"
-                FROM public."Staff"
-                WHERE "UserID" = :userid
-            LIMIT 1;
-        SQL;
-
-        $params = array([':userid', $user_id, PDO::PARAM_STR]);
-        $result = DBController::exec_statement($query, $params)->fetch();
-        $_SESSION["StaffID"] = $result["StaffID"];
-        $_SESSION["DisplayName"] = $result["DisplayName"];
-        $_SESSION["Role"] = "ADMIN";
-    }
-
 
     /**
      * Check if user is authenticated & if user is allowed to view this page \
