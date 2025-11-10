@@ -1,4 +1,4 @@
-name: CI/CD Orchestrator
+name: 2nd CI/CD Orchestrator
 
 on:
   push:
@@ -16,4 +16,4 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_HOST }} "mkdir test"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_HOST }} "mkdir test2"
