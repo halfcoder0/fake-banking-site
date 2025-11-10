@@ -48,7 +48,7 @@ services:
         environment:
             POSTGRES_DB: nexabank_db
             POSTGRES_USER: admin
-            POSTGRES_PASSWORD: P@ssw0rd
+            POSTGRES_PASSWORD: zaVXLZ6YfWF_EhgFT-jV
         volumes:
             - laravel_postgres_data:/var/lib/postgresql/data
         networks:
@@ -63,7 +63,7 @@ services:
             - "8383:80"
         environment:
             PGADMIN_DEFAULT_EMAIL: admin@admin.com
-            PGADMIN_DEFAULT_PASSWORD: password
+            PGADMIN_DEFAULT_PASSWORD: DPypiBM'D#aN59XvR\ov
         depends_on:
             - postgres_container
         networks:
