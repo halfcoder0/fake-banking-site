@@ -2,7 +2,7 @@ name: CI Orchestrator
 
 on:
   push:
-    branches: ["CI/CD-Test"]
+    branches: ["Alfred-Test-CI/CD"]
   workflow_dispatch:
 
 jobs:
