@@ -2,7 +2,7 @@
 class AuthController
 {
     const MAX_USERNAME_LEN = 50;
-    const MAX_PASSWORD_LEN = 254;
+    const MAX_PASSWORD_LEN = 100;
 
     /**
      * Attempt to authenticate user
