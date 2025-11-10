@@ -33,6 +33,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -50,14 +52,13 @@ jobs:
           done
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Debug composer and phpunit
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -al
+          find . -name phpunit
 
       - name: Run PHPUnit tests
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: nexabank_db
-          DB_USERNAME: admin
-          DB_PASSWORD: P@ssw0rd
         run: vendor/bin/phpunit
