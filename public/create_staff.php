@@ -11,11 +11,11 @@ try {
     $auth_controller = new AuthController();
     $auth_controller->check_user_role([Roles::ADMIN]);
 } catch (Exception $exception) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($exception->getMessage() . $exception->getTraceAsString());
+    error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+    redirect_500();
 } catch (Throwable $throwable) {
-    $_SESSION[SessionVariables::GENERIC_ERROR->value] = "Error with page";
-    error_log($throwable->getMessage() . $throwable->getTraceAsString());
+    error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+    redirect_500();
 }
 
 ?>

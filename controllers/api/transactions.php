@@ -10,7 +10,6 @@ try {
 
     $ctrl = new TransactionController();
     $rows = $ctrl->listTransactions($_SESSION['CustomerID']);
-    $rows = filter_var_array($rows, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     
     echo json_encode($rows, JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

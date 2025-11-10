@@ -14,11 +14,11 @@ try {
 
   $claims = get_claims();
 } catch (Exception $exception) {
-  $error = "Error with page";
-  error_log($exception->getMessage() . $exception->getTraceAsString());
+  error_log($exception->getMessage() . "\n" . $exception->getTraceAsString());
+  redirect_500();
 } catch (Throwable $throwable) {
-  $error = "Error with page";
-  error_log($throwable->getMessage() . $throwable->getTraceAsString());
+  error_log($throwable->getMessage() . "\n" .  $throwable->getTraceAsString());
+  redirect_500();
 }
 
 function get_claims()
@@ -57,7 +57,12 @@ function get_claims()
 <body>
   <div class="container mt-5">
     <h2 class="mb-4">All Claims Overview</h2>
-    <a href="/staff/assigned_claims" class="text-info m-l-5"><b>My Assigned Cases</b></a>
+    <a href="/staff/assigned_claims" class="btn btn-primary mb-3">
+      My Assigned Cases
+    </a>
+    <a href="/viewCustomers" class="btn btn-primary mb-3">
+      Back to main
+    </a>
     <table class="table table-striped table-bordered align-middle">
       <thead class="table-dark">
         <tr>
