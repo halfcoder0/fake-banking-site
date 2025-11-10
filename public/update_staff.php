@@ -112,6 +112,7 @@ include('../includes/admin_header.php');
                                 <h3 class="card-title text-center m-b-30">Search Staff</h3>
                                 <!-- Centered Search Form -->
                                 <form class="form-inline justify-content-center mb-4" method="POST" action="/admin_controller">
+                                    <?= csrf_input() ?>
                                     <!-- Hidden action -->
                                     <input type="hidden" name="action" value="search_staff">
                                     <div class="form-group mr-2">
@@ -144,7 +145,8 @@ include('../includes/admin_header.php');
                                                                         <td><?= htmlspecialchars($user['LastLogin']) ?></td>
                                                                         <td>
                                                                             <form method="POST" action="/admin_controller" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                                                                <input type="hidden" name="action" value="delete_staff">
+                                                                            <?= csrf_input() ?>    
+                                                                            <input type="hidden" name="action" value="delete_staff">
                                                                                 <input type="hidden" name="userid" value="<?= $user['UserID'] ?>">
                                                                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                                                             </form>
@@ -154,6 +156,7 @@ include('../includes/admin_header.php');
                                                                         <!-- Match number of table columns exactly -->
                                                                         <td colspan="4">
                                                                             <form class="user-update-form" method="POST" action="/admin_controller">
+                                                                                <?= csrf_input() ?>
                                                                                 <input type="hidden" name="action" value="update_staff">
                                                                                 <input type="hidden" name="userid" id="userid" value="<?= $user['UserID'] ?>">
 
