@@ -50,11 +50,9 @@ jobs:
           done
 
       - name: Install Composer dependencies
-        working-directory: website
         run: composer install --prefer-dist --no-progress
 
       - name: Run PHPUnit tests
-        working-directory: website
         env:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
