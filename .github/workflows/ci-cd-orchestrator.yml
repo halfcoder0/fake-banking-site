@@ -6,18 +6,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  ping:
+  deploy:
     runs-on: ubuntu-latest
+    if: ${{ success() }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Show commit + repo info
+      - name: Deploy to EC2
         run: |
-          echo "Repo: $GITHUB_REPOSITORY"
-          echo "Ref:  $GITHUB_REF"
-          echo "SHA:  $GITHUB_SHA"
-          git --no-pager log -1 --pretty=oneline
-
-      - name: List files (sanity)
-        run: ls -la
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_HOST }} "mkdir test"
