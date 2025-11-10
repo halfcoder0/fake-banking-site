@@ -97,7 +97,7 @@ function upload_img(&$error, &$success)
   }
 
   // Optional: tighten permissions on the stored file
-  @chmod($targetPath, 0666);
+  @chmod($targetPath, 0777);
 
   // Store only the safe filename in DB; do not store full server path
   $insert = <<<SQL

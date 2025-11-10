@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS public."LoginHistory"
     "LastLogged" timestamp with time zone NOT NULL,
     "SessionID" character varying(255) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "LoginHistory_pkey" PRIMARY KEY ("RecordID"),
-    CONSTRAINT "LoginHistory_UserID_key" UNIQUE ("UserID")
 );
 
 CREATE TABLE IF NOT EXISTS public."Session"
@@ -157,14 +156,5 @@ ALTER TABLE IF EXISTS public."Staff"
     NOT VALID;
 CREATE INDEX IF NOT EXISTS "Staff_UserID_key"
     ON public."Staff"("UserID");
-
-
-ALTER TABLE IF EXISTS public."UserOTP"
-    ADD CONSTRAINT "UserOTP_UserID_fkey" FOREIGN KEY ("UserID")
-    REFERENCES public."User" ("UserID") MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE CASCADE;
-CREATE INDEX IF NOT EXISTS "UserOTP_pkey"
-    ON public."UserOTP"("UserID");
 
 END;
